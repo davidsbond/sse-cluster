@@ -57,8 +57,8 @@ func createMemberList(cnf *config.Config) (*memberlist.Memberlist, *memberlist.N
 	node := list.LocalNode()
 	node.Meta = []byte(cnf.Port)
 
-	if len(cnf.GossipAddrs) > 0 {
-		if _, err := list.Join(cnf.GossipAddrs); err != nil {
+	if len(cnf.GossipHosts) > 0 {
+		if _, err := list.Join(cnf.GossipHosts); err != nil {
 			return nil, nil, err
 		}
 	}

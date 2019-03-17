@@ -81,7 +81,7 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 			"nodeId":  member.Name,
 			"eventId": msg.ID,
 			"event":   msg.Event,
-			"channel": msg.Channel,
+			"channel": channelID,
 		}).Info("propagated message to node")
 
 		// If we were successful, break, we will write the message to the first
