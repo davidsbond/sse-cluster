@@ -70,7 +70,6 @@ func (b *Broker) GetStatus() *Status {
 	health := &Status{}
 
 	health.Goroutines = runtime.NumGoroutine()
-
 	health.Gossip.MemberCount = b.memberlist.NumMembers()
 	health.Gossip.Members = make(map[string]int)
 

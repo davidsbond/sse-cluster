@@ -13,6 +13,11 @@ spec:
   clusterIP: None
   ports:
   - protocol: "TCP"
+    name: gossip
+    port: {{ .Values.node.gossip.port }}
+    targetPort: {{ .Values.node.gossip.port }}
+  - protocol: "TCP"
+    name: http
     port: {{ .Values.node.http.port }}
     targetPort: {{ .Values.node.http.port }}
   selector:

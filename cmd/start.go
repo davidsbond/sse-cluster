@@ -69,7 +69,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, *memberlist.Nod
 	c := memberlist.DefaultLANConfig()
 
 	c.BindPort = ctx.Int("gossip.port")
-	c.Logger = nil
+	c.LogOutput = os.Stdout
 
 	list, err := memberlist.Create(c)
 
