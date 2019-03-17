@@ -76,7 +76,7 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	channelID := vars["channel"]
 
 	h.log.WithFields(logrus.Fields{
-		"clientId":  clientID,
+		"client":  clientID,
 		"channelId": channelID,
 		"host":      r.Host,
 	}).Info("new subscriber connection")
@@ -96,10 +96,10 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 		case <-closer.CloseNotify():
 			h.broker.RemoveClient(channelID, clientID)
 
-			logrus.WithFields(logrus.Fields{
-				"clientId":  clientID,
-				"channelId": channelID,
-				"host":      r.Host,
+			h.log.WithFields(logrus.Fields{
+				"client":  clientID,
+				"channel": channelID,
+				"host":    r.Host,
 			}).Info("subscriber disconnected")
 
 			return

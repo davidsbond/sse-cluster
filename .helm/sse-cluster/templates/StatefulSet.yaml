@@ -23,6 +23,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        command: "/bin/node start"
         env:
         - name: "GOSSIP_HOSTS"
           valueFrom:
@@ -34,8 +35,8 @@ spec:
             configMapKeyRef:
               key: "GOSSIP_PORT"
               name: {{ .Release.Name }}
-        - name: "PORT"
+        - name: "HTTP_PORT"
           valueFrom:
             configMapKeyRef:
-              key: "PORT"
+              key: "HTTP_PORT"
               name: {{ .Release.Name }}

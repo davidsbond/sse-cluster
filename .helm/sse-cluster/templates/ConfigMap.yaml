@@ -10,6 +10,6 @@ metadata:
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app.kubernetes.io/name: {{ .Release.Name }}
 data:
-  PORT: "{{ .Values.node.http.port }}"
+  HTTP_PORT: "{{ .Values.node.http.port }}"
   GOSSIP_HOSTS: "{{ .Release.Name }}-0.{{ .Release.Name }}"
   GOSSIP_PORT: "{{ .Values.node.gossip.port }}"

@@ -25,8 +25,12 @@ type (
 		node       *memberlist.Node
 
 		http     *http.Client
+		httpPort string
+
 		mux      sync.Mutex
 		channels map[string]*channel.Channel
+
+		log *logrus.Entry
 	}
 
 	// The Status type represents the status of a node/cluster. It contains
@@ -43,12 +47,17 @@ type (
 
 // New creates a new instance of the Broker type using the given member list and
 // node.
-func New(ml *memberlist.Memberlist, node *memberlist.Node) *Broker {
+func New(ml *memberlist.Memberlist, node *memberlist.Node, httpPort string) *Broker {
 	br := &Broker{
 		memberlist: ml,
 		channels:   make(map[string]*channel.Channel),
 		node:       node,
 		http:       &http.Client{Timeout: time.Second * 10},
+		httpPort:   httpPort,
+		log: logrus.WithFields(logrus.Fields{
+			"name":     "broker",
+			"brokerId": node.Name,
+		}),
 	}
 
 	return br
@@ -112,18 +121,18 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 
 		// Otherwise, create a new request to the publish endpoint for the list
 		// member. They store their HTTP port in the metadata
-		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, member.Meta, channelID)
+		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, b.httpPort, channelID)
 
 		if _, err := b.http.Post(url, "application/json", bytes.NewBuffer(msg.JSON())); err != nil {
-			logrus.WithError(err).Error("failed to build http request")
+			b.log.WithError(err).Error("failed to build http request")
 			continue
 		}
 
-		logrus.WithFields(logrus.Fields{
-			"nodeId":  member.Name,
-			"eventId": msg.ID,
-			"event":   msg.Event,
-			"channel": channelID,
+		b.log.WithFields(logrus.Fields{
+			"targetNodeId": member.Name,
+			"eventId":      msg.ID,
+			"event":        msg.Event,
+			"channel":      channelID,
 		}).Info("propagated message to node")
 
 		// If we were successful, break, we will write the message to the first
@@ -143,7 +152,16 @@ func (b *Broker) NewClient(channelID, clientID string) *client.Client {
 	if !ok {
 		ch = channel.New(channelID)
 		b.channels[channelID] = ch
+
+		b.log.WithFields(logrus.Fields{
+			"channel": channelID,
+		}).Info("created new channel")
 	}
+
+	b.log.WithFields(logrus.Fields{
+		"channel": channelID,
+		"client":  clientID,
+	}).Info("created new client")
 
 	cl := ch.AddClient(clientID)
 
@@ -164,7 +182,16 @@ func (b *Broker) RemoveClient(channelID, clientID string) {
 
 	channel.RemoveClient(clientID)
 
+	b.log.WithFields(logrus.Fields{
+		"channel": channelID,
+		"client":  clientID,
+	}).Info("removed client from channel")
+
 	if channel.NumClients() == 0 {
 		delete(b.channels, channelID)
+
+		b.log.WithFields(logrus.Fields{
+			"channel": channelID,
+		}).Info("removed empty channel")
 	}
 }
