@@ -3,6 +3,7 @@ services:
   node-001:
     build:
       context: .
+    command: ["start"]
     environment: 
       PORT: 8080
       GOSSIP_PORT: 42069
@@ -13,6 +14,7 @@ services:
   node-002:
     build:
       context: .
+    command: ["start"]
     environment: 
       PORT: 8080
       GOSSIP_HOSTS: "node-001"
@@ -26,6 +28,7 @@ services:
   node-003:
     build:
       context: .
+    command: ["start"]
     environment: 
       PORT: 8080
       GOSSIP_HOSTS: "node-001,node-002"

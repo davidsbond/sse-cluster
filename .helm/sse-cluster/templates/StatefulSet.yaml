@@ -23,7 +23,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        command: "/bin/node start"
+        command: ["start"]
         env:
         - name: "GOSSIP_HOSTS"
           valueFrom:
