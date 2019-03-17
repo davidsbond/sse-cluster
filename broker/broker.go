@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/davidsbond/sse-cluster/channel"
 	"github.com/davidsbond/sse-cluster/client"
@@ -23,10 +24,13 @@ type (
 		memberlist *memberlist.Memberlist
 		node       *memberlist.Node
 
+		http     *http.Client
 		mux      sync.Mutex
 		channels map[string]*channel.Channel
 	}
 
+	// The Status type represents the status of a node/cluster. It contains
+	// sections for the gossip memberlist and the node's channels
 	Status struct {
 		Goroutines int `json:"num_goroutines"`
 		Gossip     struct {
@@ -44,6 +48,7 @@ func New(ml *memberlist.Memberlist, node *memberlist.Node) *Broker {
 		memberlist: ml,
 		channels:   make(map[string]*channel.Channel),
 		node:       node,
+		http:       &http.Client{Timeout: time.Second * 10},
 	}
 
 	return br
@@ -109,7 +114,7 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 		// member. They store their HTTP port in the metadata
 		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, member.Meta, channelID)
 
-		if _, err := http.Post(url, "application/json", bytes.NewBuffer(msg.JSON())); err != nil {
+		if _, err := b.http.Post(url, "application/json", bytes.NewBuffer(msg.JSON())); err != nil {
 			logrus.WithError(err).Error("failed to build http request")
 			continue
 		}
