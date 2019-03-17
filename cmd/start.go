@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/handler"
@@ -67,6 +69,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, *memberlist.Nod
 	c := memberlist.DefaultLANConfig()
 
 	c.BindPort = ctx.Int("gossip.port")
+	c.Logger = nil
 
 	list, err := memberlist.Create(c)
 
@@ -76,9 +79,19 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, *memberlist.Nod
 
 	node := list.LocalNode()
 	hosts := ctx.StringSlice("gossip.hosts")
+	hostname, _ := os.Hostname()
+
+	var actual []string
+	for _, host := range hosts {
+		if strings.Contains(host, hostname) {
+			continue
+		}
+
+		actual = append(actual, host)
+	}
 
 	if len(hosts) > 0 {
-		if _, err := list.Join(hosts); err != nil {
+		if _, err := list.Join(actual); err != nil {
 			return nil, nil, err
 		}
 	}

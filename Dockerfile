@@ -20,5 +20,5 @@ COPY --from=builder /bin/node /bin/node
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 USER container
-ENTRYPOINT ["/bin/node"]
+CMD [ "/bin/node" ]
 EXPOSE 8080

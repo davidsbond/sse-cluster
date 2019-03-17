@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  serviceName: {{ .Chart.Name }}
+  serviceName: {{ .Release.Name }}
   replicas: {{ .Values.node.replicas }}
   selector:
     matchLabels:
@@ -23,7 +23,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        command: ["start"]
+        command: ["/bin/node", "start"]
         env:
         - name: "GOSSIP_HOSTS"
           valueFrom:
