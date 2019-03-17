@@ -1,0 +1,12 @@
+node:
+  replicas: 2
+
+  http: 
+    port: 8080
+
+  gossip:
+    port: 42000
+
+image:
+  repository: "eu.gcr.io/chms-226211/sse-cluster"
+  tag: "latest"

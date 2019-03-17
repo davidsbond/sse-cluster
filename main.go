@@ -8,10 +8,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/davidsbond/sse-cluster/broker"
-	"github.com/davidsbond/sse-cluster/handler"
 	"github.com/davidsbond/sse-cluster/config"
+	"github.com/davidsbond/sse-cluster/handler"
 	"github.com/hashicorp/memberlist"
-	"github.com/rs/xid"
 )
 
 func main() {
@@ -32,7 +31,7 @@ func main() {
 	mux := mux.NewRouter()
 
 	mux.HandleFunc("/subscribe/{channel}", hnd.Subscribe).Methods("GET")
-	mux.HandleFunc("/publish", hnd.Publish).Methods("POST")
+	mux.HandleFunc("/publish/{channel}", hnd.Publish).Methods("POST")
 	http.ListenAndServe(":"+cnf.Port, mux)
 }
 
@@ -47,7 +46,7 @@ func createMemberList(cnf *config.Config) (*memberlist.Memberlist, *memberlist.N
 		c.BindPort = 0
 	}
 
-	c.Name = xid.New().String()
+	c.LogOutput = os.Stdout
 
 	list, err := memberlist.Create(c)
 

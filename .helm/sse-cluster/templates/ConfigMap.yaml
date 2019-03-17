@@ -1,0 +1,15 @@
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+data:
+  PORT: "{{ .Values.node.http.port }}"
+  GOSSIP_ADDRS: "{{ .Chart.Name }}-0.{{ .Chart.Name }}"
+  GOSSIP_PORT: "{{ .Values.node.gossip.port }}"

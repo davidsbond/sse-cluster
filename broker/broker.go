@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/davidsbond/sse-cluster/channel"
 	"github.com/davidsbond/sse-cluster/client"
+	"github.com/davidsbond/sse-cluster/message"
 
 	"github.com/hashicorp/memberlist"
 	"github.com/sirupsen/logrus"
@@ -39,12 +39,12 @@ func New(ml *memberlist.Memberlist, node *memberlist.Node) *Broker {
 	return br
 }
 
-// HandleMessage writes a given message to a client channel.
-func (b *Broker) HandleMessage(msg message.Message) {
+// Publish writes a given message to a client channel.
+func (b *Broker) Publish(channelID string, msg message.Message) {
 	b.mux.Lock()
 
 	// Write the message to the channel
-	if ch, ok := b.channels[msg.Channel]; ok {
+	if ch, ok := b.channels[channelID]; ok {
 		ch.Write(msg.Bytes())
 	}
 
@@ -70,7 +70,7 @@ func (b *Broker) HandleMessage(msg message.Message) {
 
 		// Otherwise, create a new request to the publish endpoint for the list
 		// member. They store their HTTP port in the metadata
-		url := fmt.Sprintf("http://%s:%s/publish", member.Addr, member.Meta)
+		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, member.Meta, channelID)
 
 		if _, err := http.Post(url, "application/json", bytes.NewBuffer(msg.JSON())); err != nil {
 			logrus.WithError(err).Error("failed to build http request")

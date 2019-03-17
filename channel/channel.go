@@ -9,7 +9,9 @@ import (
 )
 
 type (
-	// The Channel type represents a channel of clients connected to the broker
+	// The Channel type represents a channel within the broker. Each channel
+	// has a unique identifier and can have one or more clients. When events
+	// are published to a channel, a client is chosen at random
 	Channel struct {
 		id      string
 		clients map[string]*client.Client
@@ -17,6 +19,7 @@ type (
 	}
 )
 
+// New creates a new instance of the Channel type using the given identifier
 func New(id string) *Channel {
 	return &Channel{
 		id:      id,

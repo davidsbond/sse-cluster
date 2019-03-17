@@ -8,11 +8,10 @@ import (
 type (
 	// The Message type represents a server-sent event.
 	Message struct {
-		ID      string          `json:"id"`
-		Event   string          `json:"event"`
-		Data    json.RawMessage `json:"data"`
-		Channel string          `json:"channel"`
-		BeenTo  []string        `json:"been_to"`
+		ID     string          `json:"id"`
+		Event  string          `json:"event"`
+		Data   json.RawMessage `json:"data"`
+		BeenTo []string        `json:"been_to"`
 	}
 )
 

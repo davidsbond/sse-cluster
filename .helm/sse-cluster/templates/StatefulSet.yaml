@@ -1,0 +1,41 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  serviceName: {{ .Chart.Name }}
+  replicas: {{ .Values.node.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        env:
+        - name: "GOSSIP_ADDRS"
+          valueFrom:
+            configMapKeyRef:
+              key: "GOSSIP_ADDRS"
+              name: {{ .Chart.Name }}
+        - name: "GOSSIP_PORT"
+          valueFrom:
+            configMapKeyRef:
+              key: "GOSSIP_PORT"
+              name: {{ .Chart.Name }}
+        - name: "PORT"
+          valueFrom:
+            configMapKeyRef:
+              key: "PORT"
+              name: {{ .Chart.Name }}
