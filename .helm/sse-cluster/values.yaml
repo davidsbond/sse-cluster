@@ -10,3 +10,8 @@ node:
 image:
   repository: "eu.gcr.io/chms-226211/sse-cluster"
   tag: "latest"
+
+autoscaler:
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUsage: 75
