@@ -11,5 +11,5 @@ metadata:
     app.kubernetes.io/name: {{ .Release.Name }}
 data:
   PORT: "{{ .Values.node.http.port }}"
-  GOSSIP_HOSTS: "{{ .Chart.Name }}-0.{{ .Chart.Name }}"
+  GOSSIP_HOSTS: "{{ .Release.Name }}-0.{{ .Release.Name }}"
   GOSSIP_PORT: "{{ .Values.node.gossip.port }}"
