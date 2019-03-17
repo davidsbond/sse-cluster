@@ -28,6 +28,16 @@ func New(br *broker.Broker) *Handler {
 	}
 }
 
+func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
+	health := h.broker.GetStatus()
+
+	if err := json.NewEncoder(w).Encode(health); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+}
+
 // Publish handles an incoming HTTP POST request and writes a message to the broker.
 // Returns a 400 if invalid JSON has been provided.
 func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {

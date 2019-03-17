@@ -30,9 +30,13 @@ func main() {
 	hnd := handler.New(br)
 	mux := mux.NewRouter()
 
+	mux.HandleFunc("/status", hnd.Health).Methods("GET")
 	mux.HandleFunc("/subscribe/{channel}", hnd.Subscribe).Methods("GET")
 	mux.HandleFunc("/publish/{channel}", hnd.Publish).Methods("POST")
-	http.ListenAndServe(":"+cnf.Port, mux)
+
+	if err := http.ListenAndServe(":"+cnf.Port, mux); err != nil {
+		logrus.WithError(err).Fatal("failed to listen and serve http")
+	}
 }
 
 func createMemberList(cnf *config.Config) (*memberlist.Memberlist, *memberlist.Node, error) {

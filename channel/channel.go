@@ -37,6 +37,21 @@ func (c *Channel) Write(msg []byte) {
 	logrus.WithField("client", client.ID()).Info("writing message to client")
 }
 
+// ClientIDs returns an array of all client identifiers in this
+// channel.
+func (c *Channel) ClientIDs() []string {
+	var out []string
+
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	for id := range c.clients {
+		out = append(out, id)
+	}
+
+	return out
+}
+
 // AddClient adds a new client to the channel
 func (c *Channel) AddClient(id string) *client.Client {
 	c.mux.Lock()

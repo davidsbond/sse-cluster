@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"runtime"
 	"sync"
 
 	"github.com/davidsbond/sse-cluster/channel"
@@ -25,6 +26,15 @@ type (
 		mux      sync.Mutex
 		channels map[string]*channel.Channel
 	}
+
+	Status struct {
+		Goroutines int `json:"num_goroutines"`
+		Gossip     struct {
+			MemberCount int            `json:"member_count"`
+			Members     map[string]int `json:"members"`
+		} `json:"gossip"`
+		Channels map[string][]string `json:"channels"`
+	}
 )
 
 // New creates a new instance of the Broker type using the given member list and
@@ -37,6 +47,33 @@ func New(ml *memberlist.Memberlist, node *memberlist.Node) *Broker {
 	}
 
 	return br
+}
+
+// GetStatus returns information on the broker. It contains the number of running
+// goroutines, the gossip members and total member count, as well as client information
+// for this broker.
+func (b *Broker) GetStatus() *Status {
+	health := &Status{}
+
+	health.Goroutines = runtime.NumGoroutine()
+
+	health.Gossip.MemberCount = b.memberlist.NumMembers()
+	health.Gossip.Members = make(map[string]int)
+
+	for _, member := range b.memberlist.Members() {
+		health.Gossip.Members[member.Addr.String()] = int(member.Port)
+	}
+
+	health.Channels = make(map[string][]string)
+
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
+	for id, channel := range b.channels {
+		health.Channels[id] = channel.ClientIDs()
+	}
+
+	return health
 }
 
 // Publish writes a given message to a client channel.
