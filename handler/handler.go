@@ -28,10 +28,12 @@ func New(br *broker.Broker) *Handler {
 	}
 }
 
-func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
-	health := h.broker.GetStatus()
+// Status handles an incoming HTTP GET request that returns the current
+// status of the node and the gossip member list
+func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
+	status := h.broker.GetStatus()
 
-	if err := json.NewEncoder(w).Encode(health); err != nil {
+	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -84,7 +86,7 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	channel, client := h.broker.NewClient(channelID, clientID)
+	client := h.broker.NewClient(channelID, clientID)
 
 	for {
 		select {
@@ -92,7 +94,7 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 			w.Write(data)
 			flusher.Flush()
 		case <-closer.CloseNotify():
-			channel.RemoveClient(clientID)
+			h.broker.RemoveClient(channelID, clientID)
 
 			logrus.WithFields(logrus.Fields{
 				"clientId":  clientID,

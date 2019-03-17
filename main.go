@@ -30,7 +30,7 @@ func main() {
 	hnd := handler.New(br)
 	mux := mux.NewRouter()
 
-	mux.HandleFunc("/status", hnd.Health).Methods("GET")
+	mux.HandleFunc("/status", hnd.Status).Methods("GET")
 	mux.HandleFunc("/subscribe/{channel}", hnd.Subscribe).Methods("GET")
 	mux.HandleFunc("/publish/{channel}", hnd.Publish).Methods("POST")
 

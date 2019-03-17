@@ -63,6 +63,15 @@ func (c *Channel) AddClient(id string) *client.Client {
 	return cl
 }
 
+// NumClients returns the total number of clients for a
+// channel.
+func (c *Channel) NumClients() int {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	return len(c.clients)
+}
+
 // RemoveClient removes a client from the channel
 func (c *Channel) RemoveClient(id string) {
 	c.mux.Lock()
