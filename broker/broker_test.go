@@ -9,12 +9,14 @@ import (
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/message"
 	"github.com/hashicorp/memberlist"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestBroker_Publish(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name            string
@@ -72,18 +74,19 @@ func TestBroker_Publish(t *testing.T) {
 
 func TestBroker_Status(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
-		Name                string
-		ExpectationFunc     func(*mock.Mock)
-		ExpectedMemberCount int
-		ExpectedMembers     map[string]int
+		Name                 string
+		ExpectationFunc      func(*mock.Mock)
+		ExpectedMemberCount  int
+		ExpectedMembers      map[string]int
 		ExpectedChannelCount int
 	}{
 		{
-			Name:                "It obtain node status",
+			Name:                 "It obtain node status",
 			ExpectedChannelCount: 1,
-			ExpectedMemberCount: 1,
+			ExpectedMemberCount:  1,
 			ExpectedMembers: map[string]int{
 				"127.0.0.1": 1337,
 			},
@@ -133,6 +136,7 @@ func TestBroker_Status(t *testing.T) {
 
 func TestBroker_NewClient(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name            string
@@ -167,6 +171,7 @@ func TestBroker_NewClient(t *testing.T) {
 
 func TestBroker_RemoveClient(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name            string
@@ -175,7 +180,7 @@ func TestBroker_RemoveClient(t *testing.T) {
 		ExpectationFunc func(*mock.Mock)
 	}{
 		{
-			Name:    "It should create a new client",
+			Name:    "It should remove a client",
 			Channel: "test",
 			Client:  "test",
 			ExpectationFunc: func(m *mock.Mock) {

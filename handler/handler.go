@@ -71,7 +71,7 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.broker.Publish(channelID, msg)
+	go h.broker.Publish(channelID, msg)
 }
 
 // Subscribe handles an incoming HTTP GET request and starts an event-stream with
