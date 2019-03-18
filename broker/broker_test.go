@@ -2,6 +2,7 @@ package broker_test
 
 import (
 	"net"
+	"net/http"
 	"testing"
 
 	"gopkg.in/h2non/gock.v1"
@@ -43,6 +44,7 @@ func TestBroker_Publish(t *testing.T) {
 					{
 						Name: "test",
 						Addr: net.ParseIP("127.0.0.1"),
+						Meta: []byte("8080"),
 					},
 				})
 
@@ -59,7 +61,7 @@ func TestBroker_Publish(t *testing.T) {
 			m := &MockMemberlist{}
 			tc.ExpectationFunc(&m.Mock, req)
 
-			b := broker.New(m, "8080")
+			b := broker.New(m, http.DefaultClient)
 			c := b.NewClient(tc.Channel, tc.Client)
 
 			b.Publish(tc.Channel, tc.Message)
@@ -103,6 +105,7 @@ func TestBroker_Status(t *testing.T) {
 						Name: "test",
 						Addr: net.ParseIP("127.0.0.1"),
 						Port: 1337,
+						Meta: []byte("8080"),
 					},
 				})
 			},
@@ -114,7 +117,7 @@ func TestBroker_Status(t *testing.T) {
 			m := &MockMemberlist{}
 			tc.ExpectationFunc(&m.Mock)
 
-			b := broker.New(m, "")
+			b := broker.New(m, http.DefaultClient)
 			b.NewClient("test", "test")
 
 			status := b.Status()
@@ -161,7 +164,7 @@ func TestBroker_NewClient(t *testing.T) {
 			m := &MockMemberlist{}
 			tc.ExpectationFunc(&m.Mock)
 
-			b := broker.New(m, "")
+			b := broker.New(m, http.DefaultClient)
 			cl := b.NewClient(tc.Channel, tc.Client)
 
 			assert.Equal(t, tc.Client, cl.ID())
@@ -201,7 +204,7 @@ func TestBroker_RemoveClient(t *testing.T) {
 			m := &MockMemberlist{}
 			tc.ExpectationFunc(&m.Mock)
 
-			b := broker.New(m, "")
+			b := broker.New(m, http.DefaultClient)
 			b.NewClient(tc.Channel, tc.Client)
 
 			status := b.Status()

@@ -18,8 +18,8 @@ spec:
     targetPort: {{ .Values.node.gossip.port }}
   - protocol: "TCP"
     name: http
-    port: {{ .Values.node.http.port }}
-    targetPort: {{ .Values.node.http.port }}
+    port: {{ .Values.node.http.server.port }}
+    targetPort: {{ .Values.node.http.server.port }}
   selector:
     app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/instance: {{ .Release.Name }}

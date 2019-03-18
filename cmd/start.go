@@ -26,19 +26,55 @@ func Start() cli.Command {
 			cli.StringSliceFlag{
 				Name:   "gossip.hosts",
 				EnvVar: "GOSSIP_HOSTS",
-				Usage:  "Comma separated list of hosts to sync with",
+				Usage:  "The initial hosts the node should connect to, should be a comma-seperated string of hosts",
 			},
 			cli.IntFlag{
-				Usage:  "The port to use for gossip protocol",
+				Usage:  "The port to use for communications via gossip protocol",
 				Name:   "gossip.port",
 				EnvVar: "GOSSIP_PORT",
 				Value:  42000,
 			},
 			cli.StringFlag{
-				Usage:  "The port to use for http protocol",
-				Name:   "http.port",
-				EnvVar: "HTTP_PORT",
+				Usage:  "The port to use for listening to HTTP requests",
+				Name:   "http.server.port",
+				EnvVar: "HTTP_SERVER_PORT",
 				Value:  "8080",
+			},
+			cli.DurationFlag{
+				Name:   "http.server.read-timeout",
+				Usage:  "The maximum duration for the HTTP server to read an entire request, including the body",
+				EnvVar: "HTTP_SERVER_READ_TIMEOUT",
+				Value:  time.Second * 10,
+			},
+			cli.DurationFlag{
+				Name:   "http.server.write-timeout",
+				Usage:  "the maximum duration for the HTTP server to wait before timing out writes of a response",
+				EnvVar: "HTTP_SERVER_WRITE_TIMEOUT",
+				Value:  time.Second * 10,
+			},
+			cli.DurationFlag{
+				Name:   "http.client.timeout",
+				Usage:  "Sets the request timeout for the http client",
+				EnvVar: "HTTP_CLIENT_TIMEOUT",
+				Value:  time.Second * 10,
+			},
+			cli.DurationFlag{
+				Name:   "http.server.idle-timeout",
+				Usage:  "Sets the idle timeout duration for the http server",
+				EnvVar: "HTTP_SERVER_IDLE_TIMEOUT",
+				Value:  time.Second * 10,
+			},
+			cli.DurationFlag{
+				Name:   "http.server.read-header-timeout",
+				Usage:  "Sets the read header timeout duration for the http server",
+				EnvVar: "HTTP_SERVER_READ_HEADER_TIMEOUT",
+				Value:  time.Second * 10,
+			},
+			cli.IntFlag{
+				Name:   "http.server.max-header-bytes",
+				Usage:  "Sets the max number of header bytes for the http server",
+				EnvVar: "HTTP_SERVER_MAX_HEADER_BYTES",
+				Value:  http.DefaultMaxHeaderBytes,
 			},
 		},
 	}
@@ -51,16 +87,18 @@ func start(ctx *cli.Context) error {
 		return cli.NewExitError(err.Error(), 1)
 	}
 
-	httpPort := ctx.String("http.port")
+	cl := &http.Client{
+		Timeout: ctx.Duration("http.client.timeout"),
+	}
 
-	br := broker.New(list, httpPort)
+	br := broker.New(list, cl)
 	hnd := handler.New(br)
 	svr := createHTTPServer(ctx, hnd)
 
 	// Execute ListenAndServe in a seperate goroutine as it blocks
 	go func() {
 		logrus.Info("starting http server")
-	
+
 		if err := svr.ListenAndServe(); err != nil {
 			logrus.WithError(err).Error("http server exited")
 		}
@@ -86,7 +124,7 @@ func handleExitSignal(svr *http.Server, ml *memberlist.Memberlist) error {
 	if err := ml.Leave(time.Second * 5); err != nil {
 		return err
 	}
-	
+
 	// Gracefully shut down the HTTP server
 	return svr.Shutdown(ctx)
 }
@@ -99,14 +137,19 @@ func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
 	mux.HandleFunc("/publish/{channel}", h.Publish).Methods("POST")
 
 	svr := &http.Server{
-		Handler: mux,
-		Addr:    ":" + ctx.String("http.port"),
+		Handler:           mux,
+		Addr:              ":" + ctx.String("http.server.port"),
+		ReadTimeout:       ctx.Duration("http.server.read-timeout"),
+		WriteTimeout:      ctx.Duration("http.server.write-timeout"),
+		IdleTimeout:       ctx.Duration("http.server.idle-timeout"),
+		MaxHeaderBytes:    ctx.Int("http.server.max-header-bytes"),
+		ReadHeaderTimeout: ctx.Duration("http.server.read-header-timeout"),
 	}
 
 	return svr
 }
 
-func createMemberList(ctx *cli.Context) (*memberlist.Memberlist,error) {
+func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	c := memberlist.DefaultLANConfig()
 
 	c.BindPort = ctx.Int("gossip.port")
@@ -131,6 +174,8 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist,error) {
 
 		actual = append(actual, host)
 	}
+
+	list.LocalNode().Meta = []byte(ctx.String("http.server.port"))
 
 	if len(hosts) > 0 {
 		logrus.WithField("hosts", actual).Info("joining sse cluster")

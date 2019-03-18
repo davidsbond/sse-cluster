@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"runtime"
 	"sync"
-	"time"
 
 	"github.com/davidsbond/sse-cluster/channel"
 	"github.com/davidsbond/sse-cluster/client"
@@ -23,14 +22,10 @@ type (
 	// client channels.
 	Broker struct {
 		memberlist Memberlist
-
-		http     *http.Client
-		httpPort string
-
-		mux      sync.Mutex
-		channels map[string]*channel.Channel
-
-		log *logrus.Entry
+		http       *http.Client
+		mux        sync.Mutex
+		channels   map[string]*channel.Channel
+		log        *logrus.Entry
 	}
 
 	// The Memberlist type represents the gossip implementation used by the
@@ -55,12 +50,11 @@ type (
 
 // New creates a new instance of the Broker type using the given member list and
 // node.
-func New(ml Memberlist, httpPort string) *Broker {
+func New(ml Memberlist, cl *http.Client) *Broker {
 	br := &Broker{
 		memberlist: ml,
 		channels:   make(map[string]*channel.Channel),
-		http:       &http.Client{Timeout: time.Second * 10},
-		httpPort:   httpPort,
+		http:       cl,
 		log: logrus.WithFields(logrus.Fields{
 			"name":     "broker",
 			"brokerId": ml.LocalNode().Name,
@@ -131,7 +125,7 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 		// Append this node's id to the list of node ids this event
 		// has already been to
 		msg.BeenTo = append(msg.BeenTo, b.memberlist.LocalNode().Name)
-		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, b.httpPort, channelID)
+		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, member.Meta, channelID)
 
 		// Send an HTTP POST request to the event publishing endpoint of the member
 		// node.

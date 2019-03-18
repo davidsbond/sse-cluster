@@ -2,7 +2,16 @@ node:
   replicas: 2
 
   http: 
-    port: 8080
+    server:
+      port: 8080
+      readTimeout: 10s
+      writeTimeout: 10s
+      idleTimeout: 10s
+      maxHeaderBytes: "1048576"
+      readHeaderTimeout: 10s
+
+    client:
+      timeout: 10s
 
   gossip:
     port: 42000

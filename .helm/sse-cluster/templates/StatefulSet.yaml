@@ -35,8 +35,23 @@ spec:
             configMapKeyRef:
               key: "GOSSIP_PORT"
               name: {{ .Release.Name }}
-        - name: "HTTP_PORT"
+        - name: "HTTP_SERVER_PORT"
           valueFrom:
             configMapKeyRef:
-              key: "HTTP_PORT"
+              key: "HTTP_SERVER_PORT"
+              name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_WRITE_TIMEOUT"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_WRITE_TIMEOUT"
+              name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_READ_TIMEOUT"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_READ_TIMEOUT"
+              name: {{ .Release.Name }}
+        - name: "HTTP_CLIENT_TIMEOUT"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_CLIENT_TIMEOUT"
               name: {{ .Release.Name }}
