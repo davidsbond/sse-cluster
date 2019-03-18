@@ -16,6 +16,7 @@ type (
 		id      string
 		clients map[string]*client.Client
 		mux     sync.Mutex
+		log     *logrus.Entry
 	}
 )
 
@@ -24,17 +25,18 @@ func New(id string) *Channel {
 	return &Channel{
 		id:      id,
 		clients: make(map[string]*client.Client),
+		log:     logrus.WithField("channel", id),
 	}
 }
 
 // Write writes a given message to a random client in the channel
 func (c *Channel) Write(msg []byte) {
-	logrus.WithField("channel", c.id).Info("writing message to channel")
+	c.log.Info("writing message to channel")
 
 	client := c.randomClient()
 	client.Write(msg)
 
-	logrus.WithField("client", client.ID()).Info("writing message to client")
+	c.log.WithField("client", client.ID()).Info("writing message to client")
 }
 
 // ClientIDs returns an array of all client identifiers in this

@@ -75,11 +75,13 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	clientID := xid.New().String()
 	channelID := vars["channel"]
 
-	h.log.WithFields(logrus.Fields{
+	reqInfo := logrus.Fields{
 		"client":  clientID,
-		"channelId": channelID,
-		"host":      r.Host,
-	}).Info("new subscriber connection")
+		"channel": channelID,
+		"host":    r.Host,
+	}
+
+	h.log.WithFields(reqInfo).Info("new subscriber connection")
 
 	// Set streaming headers
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -91,16 +93,15 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case data := <-client.Messages():
-			w.Write(data)
+			if _, err := w.Write(data); err != nil {
+				h.log.WithError(err).WithFields(reqInfo).Error("failed to write data")
+				continue
+			}
+
 			flusher.Flush()
 		case <-closer.CloseNotify():
 			h.broker.RemoveClient(channelID, clientID)
-
-			h.log.WithFields(logrus.Fields{
-				"client":  clientID,
-				"channel": channelID,
-				"host":    r.Host,
-			}).Info("subscriber disconnected")
+			h.log.WithFields(reqInfo).Info("subscriber disconnected")
 
 			return
 		}
