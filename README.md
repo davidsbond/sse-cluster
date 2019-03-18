@@ -1,6 +1,7 @@
 # sse-cluster
 
 [![CircleCI](https://circleci.com/gh/davidsbond/sse-cluster.svg?style=shield)](https://circleci.com/gh/davidsbond/sse-cluster)
+[![Coverage Status](https://coveralls.io/repos/github/davidsbond/sse-cluster/badge.svg?branch=master)](https://coveralls.io/github/davidsbond/sse-cluster?branch=master)
 [![GoDoc](https://godoc.org/github.com/davidsbond/sse-cluster?status.svg)](http://godoc.org/github.com/davidsbond/sse-cluster)
 [![Go Report Card](https://goreportcard.com/badge/github.com/davidsbond/sse-cluster)](https://goreportcard.com/report/github.com/davidsbond/sse-cluster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)

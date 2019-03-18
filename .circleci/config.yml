@@ -16,13 +16,19 @@ jobs:
           keys:
             - gocache-{{ .Branch }}-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
       - run:
-          name: Install go-junit-report
-          command: go get -u github.com/jstemmer/go-junit-report
+          name: Install test tools
+          command: |
+            go get -u github.com/jstemmer/go-junit-report
+            go get golang.org/x/tools/cmd/cover
+            go get github.com/mattn/goveralls
       - run:
           name: Run tests
           command: |
             mkdir -p /tmp/test-results
-            go test -v ./... | go-junit-report > /tmp/test-results/junit.xml
+            go test -covermode=count -coverprofile=coverage.out -v ./... | go-junit-report > /tmp/test-results/junit.xml
+      - run:
+          name: Upload test coverage
+          command: goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
       - store_test_results:
           path: /tmp/test-results
 
