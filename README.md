@@ -1,5 +1,10 @@
 # sse-cluster
 
+[![CircleCI](https://circleci.com/gh/davidsbond/sse-cluster.svg?style=shield)](https://circleci.com/gh/davidsbond/sse-cluster)
+[![GoDoc](https://godoc.org/github.com/davidsbond/sse-cluster?status.svg)](http://godoc.org/github.com/davidsbond/sse-cluster)
+[![Go Report Card](https://goreportcard.com/badge/github.com/davidsbond/sse-cluster)](https://goreportcard.com/report/github.com/davidsbond/sse-cluster)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 A scalable [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) broker
 
 ## Features
