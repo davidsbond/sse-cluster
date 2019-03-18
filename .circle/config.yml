@@ -1,0 +1,40 @@
+version: 2.1
+
+jobs:
+  test:
+    environment:
+      # Disable C support and set the cache to a location we can upload.
+      CGO_ENABLED: "0"
+      GOCACHE: "/tmp/go/cache"
+    docker:
+      - image: circleci/golang
+    steps:
+      - checkout
+      # Restore the cache from the previous build number, this way we can cache
+      # tests that won't have changed since the last build for this branch.
+      - restore_cache:
+          keys:
+            - gocache-{{ .Branch }}-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
+      - run:
+          name: Install go-junit-report
+          command: go get -u github.com/jstemmer/go-junit-report
+      - run:
+          name: Run tests
+          command: |
+            mkdir -p /tmp/test-results
+            go test -v ./... | go-junit-report > /tmp/test-results/junit.xml
+      - store_test_results:
+          path: /tmp/test-results
+
+      # Save the cache with the current build number to be picked up by the next build
+      # for this branch.
+      - save_cache:
+          key: gocache-{{ .Branch }}-{{ .BuildNum }}
+          paths:
+              - /tmp/go/cache
+              - /go/pkg/mod
+workflows:
+  version: 2
+  development:
+    jobs:
+      - test
