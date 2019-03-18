@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/davidsbond/sse-cluster/broker"
+	"github.com/davidsbond/sse-cluster/client"
 	"github.com/davidsbond/sse-cluster/message"
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
@@ -16,14 +17,23 @@ type (
 	// The Handler type contains methods for handling inbound HTTP requests
 	// to the broker.
 	Handler struct {
-		broker    *broker.Broker
+		broker    Broker
 		log       *logrus.Entry
 		validator *validator.Validate
+	}
+
+	// The Broker interface defines methods the HTTP handlers use to perform
+	// operations against the broker from HTTP requests.
+	Broker interface {
+		GetStatus() *broker.Status
+		Publish(string, message.Message) error
+		NewClient(string, string) *client.Client
+		RemoveClient(string, string)
 	}
 )
 
 // New creates a new instance of the Handler type with the given broker
-func New(br *broker.Broker) *Handler {
+func New(br Broker) *Handler {
 	return &Handler{
 		broker:    br,
 		log:       logrus.WithField("name", "handler"),
