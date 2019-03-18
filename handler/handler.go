@@ -9,22 +9,25 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
 type (
 	// The Handler type contains methods for handling inbound HTTP requests
 	// to the broker.
 	Handler struct {
-		broker *broker.Broker
-		log    *logrus.Entry
+		broker    *broker.Broker
+		log       *logrus.Entry
+		validator *validator.Validate
 	}
 )
 
 // New creates a new instance of the Handler type with the given broker
 func New(br *broker.Broker) *Handler {
 	return &Handler{
-		broker: br,
-		log:    logrus.WithField("name", "handler"),
+		broker:    br,
+		log:       logrus.WithField("name", "handler"),
+		validator: validator.New(),
 	}
 }
 
@@ -50,6 +53,10 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		http.Error(w, "invalid json in request", http.StatusBadRequest)
+	}
+
+	if err := h.validator.Struct(msg); err != nil {
+		http.Error(w, "invalid values in request", http.StatusBadRequest)
 	}
 
 	h.broker.Publish(channelID, msg)
