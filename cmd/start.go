@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/handler"
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/memberlist"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -41,7 +45,7 @@ func Start() cli.Command {
 }
 
 func start(ctx *cli.Context) error {
-	list, node, err := createMemberList(ctx)
+	list, err := createMemberList(ctx)
 
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)
@@ -49,35 +53,73 @@ func start(ctx *cli.Context) error {
 
 	httpPort := ctx.String("http.port")
 
-	br := broker.New(list, node, httpPort)
+	br := broker.New(list, httpPort)
 	hnd := handler.New(br)
+	svr := createHTTPServer(ctx, hnd)
 
-	mux := mux.NewRouter()
+	// Execute ListenAndServe in a seperate goroutine as it blocks
+	go func() {
+		logrus.Info("starting http server")
+	
+		if err := svr.ListenAndServe(); err != nil {
+			logrus.WithError(err).Error("http server exited")
+		}
+	}()
 
-	mux.HandleFunc("/status", hnd.Status).Methods("GET")
-	mux.HandleFunc("/subscribe/{channel}", hnd.Subscribe).Methods("GET")
-	mux.HandleFunc("/publish/{channel}", hnd.Publish).Methods("POST")
-
-	if err := http.ListenAndServe(":"+httpPort, mux); err != nil {
+	if err := handleExitSignal(svr, list); err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
 
 	return nil
 }
 
-func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, *memberlist.Node, error) {
+func handleExitSignal(svr *http.Server, ml *memberlist.Memberlist) error {
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+
+	<-stop
+	logrus.Info("got shutdown signal")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Leave the gossip memberlist
+	if err := ml.Leave(time.Second * 5); err != nil {
+		return err
+	}
+	
+	// Gracefully shut down the HTTP server
+	return svr.Shutdown(ctx)
+}
+
+func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
+	mux := mux.NewRouter()
+
+	mux.HandleFunc("/status", h.Status).Methods("GET")
+	mux.HandleFunc("/subscribe/{channel}", h.Subscribe).Methods("GET")
+	mux.HandleFunc("/publish/{channel}", h.Publish).Methods("POST")
+
+	svr := &http.Server{
+		Handler: mux,
+		Addr:    ":" + ctx.String("http.port"),
+	}
+
+	return svr
+}
+
+func createMemberList(ctx *cli.Context) (*memberlist.Memberlist,error) {
 	c := memberlist.DefaultLANConfig()
 
 	c.BindPort = ctx.Int("gossip.port")
-	c.LogOutput = os.Stdout
+	c.LogOutput = nil
+
+	logrus.Info("creating gossip memberlist")
 
 	list, err := memberlist.Create(c)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	node := list.LocalNode()
 	hosts := ctx.StringSlice("gossip.hosts")
 	hostname, _ := os.Hostname()
 
@@ -91,10 +133,12 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, *memberlist.Nod
 	}
 
 	if len(hosts) > 0 {
+		logrus.WithField("hosts", actual).Info("joining sse cluster")
+
 		if _, err := list.Join(actual); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	return list, node, nil
+	return list, nil
 }

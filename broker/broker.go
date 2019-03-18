@@ -22,7 +22,6 @@ type (
 	// client channels.
 	Broker struct {
 		memberlist *memberlist.Memberlist
-		node       *memberlist.Node
 
 		http     *http.Client
 		httpPort string
@@ -47,16 +46,15 @@ type (
 
 // New creates a new instance of the Broker type using the given member list and
 // node.
-func New(ml *memberlist.Memberlist, node *memberlist.Node, httpPort string) *Broker {
+func New(ml *memberlist.Memberlist, httpPort string) *Broker {
 	br := &Broker{
 		memberlist: ml,
 		channels:   make(map[string]*channel.Channel),
-		node:       node,
 		http:       &http.Client{Timeout: time.Second * 10},
 		httpPort:   httpPort,
 		log: logrus.WithFields(logrus.Fields{
 			"name":     "broker",
-			"brokerId": node.Name,
+			"brokerId": ml.LocalNode().Name,
 		}),
 	}
 
@@ -110,13 +108,13 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 	for _, member := range b.memberlist.Members() {
 		// If we're looking at ourselves, or a node the message has already
 		// been through, skip.
-		if _, ok := ids[member.Name]; ok || member == b.node {
+		if _, ok := ids[member.Name]; ok || member == b.memberlist.LocalNode() {
 			continue
 		}
 
 		// Append this node's id to the list of node ids this event
 		// has already been to
-		msg.BeenTo = append(msg.BeenTo, b.node.Name)
+		msg.BeenTo = append(msg.BeenTo, b.memberlist.LocalNode().Name)
 
 		// Otherwise, create a new request to the publish endpoint for the list
 		// member. They store their HTTP port in the metadata
