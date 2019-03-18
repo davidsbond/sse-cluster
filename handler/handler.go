@@ -63,13 +63,17 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		http.Error(w, "invalid json in request", http.StatusBadRequest)
+		return
 	}
 
 	if err := h.validator.Struct(msg); err != nil {
 		http.Error(w, "invalid values in request", http.StatusBadRequest)
+		return
 	}
 
-	h.broker.Publish(channelID, msg)
+	if err := h.broker.Publish(channelID, msg); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // Subscribe handles an incoming HTTP GET request and starts an event-stream with
