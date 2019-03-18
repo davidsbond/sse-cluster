@@ -5,7 +5,7 @@ services:
       context: .
     command: ["/bin/node", "start"]
     environment: 
-      PORT: 8080
+      HTTP_PORT: 8080
       GOSSIP_PORT: 42069
     restart: on-failure
     ports: 
@@ -16,7 +16,7 @@ services:
       context: .
     command: ["/bin/node", "start"]
     environment: 
-      PORT: 8080
+      HTTP_PORT: 8080
       GOSSIP_HOSTS: "node-001"
       GOSSIP_PORT: 42069
     restart: on-failure
@@ -30,7 +30,7 @@ services:
       context: .
     command: ["/bin/node", "start"]
     environment: 
-      PORT: 8080
+      HTTP_PORT: 8080
       GOSSIP_HOSTS: "node-001,node-002"
       GOSSIP_PORT: 42069
     restart: on-failure
