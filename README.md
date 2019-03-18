@@ -9,6 +9,7 @@ A scalable [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API
 * Scalability
   * Each node uses [gossip protocol](https://en.wikipedia.org/wiki/Gossip_protocol) to discover more nodes. New nodes need only be started with the hostname of a single active node in the cluster.
   * When a node recieves an event, it propagates it to the next node, appending metadata to the message to avoid event duplication
+  * Nodes provide their HTTP port as gossip metadata, allowing connections between nodes that are configured differently from one another.
 * `EventSource` compatibility
 
   * Using JavaScript, you can use native `EventSource` class to stream events from the broker. Below is an example:
@@ -30,7 +31,7 @@ A scalable [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API
   }
 
   // Handle specific event types, this method is invoked for 'ping' events.
-  es.addEventListener('ping', function(e) {
+  es.addEventListener('ping', (e) => {
     const newElement = document.createElement('li');
     const obj = JSON.parse(e.data);
 
@@ -78,7 +79,7 @@ Upon success, a `StatefulSet` and `HorizontalPodAutoscaler` will be created in y
 
 ## Configuration
 
-Configuration is provided to a node either via environment variables or command-line arguments:
+Configuration is provided to a node either via environment variables or command-line arguments. Most aspects of the broker can be controlled via these configuration values.
 
 | Argument                          | Environment Variable              | Description                                                                                        | Default   |
 |:----------------------------------|:----------------------------------|:---------------------------------------------------------------------------------------------------|:----------|
