@@ -91,6 +91,7 @@ Configuration is provided to a node either via environment variables or command-
 |:----------------------------------|:----------------------------------|:---------------------------------------------------------------------------------------------------|:----------|
 | `gossip.port`                     | `GOSSIP_PORT`                     | The port to use for communications via gossip protocol                                             | `N/A`     |
 | `gossip.hosts`                    | `GOSSIP_HOSTS`                    | The initial hosts the node should connect to, should be a comma-seperated string of hosts          | `N/A`     |
+| `gossip.secretKey`                | `GOSSIP_SECRET_KEY`               | The key used to initialize the primary encryption key in a keyring                                 | `N/A`     |
 | `http.client.timeout`             | `HTTP_CLIENT_TIMEOUT`             | The time limit for HTTP requests made by the client                                                | `10s`     |
 | `http.server.port`                | `HTTP_SERVER_PORT`                | The port to use for listening to HTTP requests                                                     | `8080`    |
 | `http.server.read-timeout`        | `HTTP_SERVER_READ_TIMEOUT`        | The maximum duration for the HTTP server to read an entire request, including the body.            | `10s`     |

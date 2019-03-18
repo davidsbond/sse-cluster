@@ -36,6 +36,11 @@ func Start() cli.Command {
 				Value:  42000,
 			},
 			cli.StringFlag{
+				Usage:  "The key used to initialize the primary encryption key in a keyring",
+				Name:   "gossip.secretKey",
+				EnvVar: "GOSSIP_SECRET_KEY",
+			},
+			cli.StringFlag{
 				Usage:  "The port to use for listening to HTTP requests",
 				Name:   "http.server.port",
 				EnvVar: "HTTP_SERVER_PORT",
@@ -158,8 +163,9 @@ func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
 func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	c := memberlist.DefaultLANConfig()
 
-	c.BindPort = ctx.Int("gossip.port")
 	c.Logger = log.New(logrus.StandardLogger().Writer(), "", 0)
+	c.BindPort = ctx.Int("gossip.port")
+	c.SecretKey = []byte(ctx.String("gossip.secret-key"))
 
 	logrus.Info("creating gossip memberlist")
 

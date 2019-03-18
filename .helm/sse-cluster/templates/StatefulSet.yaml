@@ -30,6 +30,11 @@ spec:
             configMapKeyRef:
               key: "GOSSIP_HOSTS"
               name: {{ .Release.Name }}
+        - name: "GOSSIP_SECRET_KEY"
+          valueFrom:
+            secretKeyRef:
+              key: "GOSSIP_SECRET_KEY"
+              name: {{ .Release.Name }}
         - name: "GOSSIP_PORT"
           valueFrom:
             configMapKeyRef:

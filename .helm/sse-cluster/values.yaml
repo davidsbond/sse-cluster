@@ -15,6 +15,7 @@ node:
 
   gossip:
     port: 42000
+    secretKey: thisisatemporarykey
 
 image:
   repository: "eu.gcr.io/chms-226211/sse-cluster"

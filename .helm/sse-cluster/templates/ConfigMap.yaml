@@ -12,6 +12,7 @@ metadata:
 data:
   GOSSIP_HOSTS: "{{ .Release.Name }}-0.{{ .Release.Name }}"
   GOSSIP_PORT: "{{ .Values.node.gossip.port }}"
+  GOSSIP_SECRET_KEY: "{{ .Values.node.gossip.secretKey }}"
   HTTP_CLIENT_TIMEOUT: "{{ .Values.node.http.client.timeout }}"
   HTTP_SERVER_PORT: "{{ .Values.node.http.server.port }}"
   HTTP_SERVER_READ_TIMEOUT: "{{ .Values.node.http.server.readTimeout }}"
