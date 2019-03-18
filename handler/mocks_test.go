@@ -34,7 +34,7 @@ func (rr *ResponseRecorder) CloseNotify() <-chan bool {
 	return rr.close
 }
 
-func (m *MockBroker) GetStatus() *broker.Status {
+func (m *MockBroker) Status() *broker.Status {
 	args := m.Called()
 
 	if args.Get(0) != nil {

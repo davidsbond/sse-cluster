@@ -62,10 +62,10 @@ func New(ml *memberlist.Memberlist, httpPort string) *Broker {
 	return br
 }
 
-// GetStatus returns information on the broker. It contains the number of running
+// Status returns information on the broker. It contains the number of running
 // goroutines, the gossip members and total member count, as well as client information
 // for this broker.
-func (b *Broker) GetStatus() *Status {
+func (b *Broker) Status() *Status {
 	health := &Status{}
 
 	health.Goroutines = runtime.NumGoroutine()

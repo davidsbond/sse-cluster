@@ -31,7 +31,7 @@ func TestHandler_Status(t *testing.T) {
 			ExpectedCode:        http.StatusOK,
 			ExpectedContentType: "application/json",
 			ExpectationFunc: func(m *mock.Mock) {
-				m.On("GetStatus").Return(&broker.Status{})
+				m.On("Status").Return(&broker.Status{})
 			},
 		},
 	}

@@ -25,7 +25,7 @@ type (
 	// The Broker interface defines methods the HTTP handlers use to perform
 	// operations against the broker from HTTP requests.
 	Broker interface {
-		GetStatus() *broker.Status
+		Status() *broker.Status
 		Publish(string, message.Message)
 		NewClient(string, string) *client.Client
 		RemoveClient(string, string)
@@ -44,7 +44,7 @@ func New(br Broker) *Handler {
 // Status handles an incoming HTTP GET request that returns the current
 // status of the node and the gossip member list
 func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
-	status := h.broker.GetStatus()
+	status := h.broker.Status()
 
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
