@@ -22,7 +22,7 @@ type (
 	// the list of all other members as well as a map of connected
 	// client channels.
 	Broker struct {
-		memberlist *memberlist.Memberlist
+		memberlist Memberlist
 
 		http     *http.Client
 		httpPort string
@@ -31,6 +31,14 @@ type (
 		channels map[string]*channel.Channel
 
 		log *logrus.Entry
+	}
+
+	// The Memberlist type represents the gossip implementation used by the
+	// broker for service discovery.
+	Memberlist interface {
+		NumMembers() int
+		LocalNode() *memberlist.Node
+		Members() []*memberlist.Node
 	}
 
 	// The Status type represents the status of a node/cluster. It contains
@@ -47,7 +55,7 @@ type (
 
 // New creates a new instance of the Broker type using the given member list and
 // node.
-func New(ml *memberlist.Memberlist, httpPort string) *Broker {
+func New(ml Memberlist, httpPort string) *Broker {
 	br := &Broker{
 		memberlist: ml,
 		channels:   make(map[string]*channel.Channel),
@@ -133,7 +141,7 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 			b.log.
 				WithFields(evtInfo).
 				WithError(err).
-				Error("failed to build http request")
+				Error("failed to perform http request")
 
 			continue
 		}
