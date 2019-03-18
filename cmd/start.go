@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -126,7 +127,11 @@ func handleExitSignal(svr *http.Server, ml *memberlist.Memberlist) error {
 	}
 
 	// Gracefully shut down the HTTP server
-	return svr.Shutdown(ctx)
+	if err := svr.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	return logrus.StandardLogger().Writer().Close()
 }
 
 func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
@@ -144,6 +149,7 @@ func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
 		IdleTimeout:       ctx.Duration("http.server.idle-timeout"),
 		MaxHeaderBytes:    ctx.Int("http.server.max-header-bytes"),
 		ReadHeaderTimeout: ctx.Duration("http.server.read-header-timeout"),
+		ErrorLog:          log.New(logrus.StandardLogger().Writer(), "", 0),
 	}
 
 	return svr
@@ -153,7 +159,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	c := memberlist.DefaultLANConfig()
 
 	c.BindPort = ctx.Int("gossip.port")
-	c.LogOutput = nil
+	c.Logger = log.New(logrus.StandardLogger().Writer(), "", 0)
 
 	logrus.Info("creating gossip memberlist")
 
