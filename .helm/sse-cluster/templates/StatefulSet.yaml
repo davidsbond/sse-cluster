@@ -55,3 +55,18 @@ spec:
             configMapKeyRef:
               key: "HTTP_CLIENT_TIMEOUT"
               name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_IDLE_TIMEOUT"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_IDLE_TIMEOUT"
+              name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_READ_HEADER_TIMEOUT"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_READ_HEADER_TIMEOUT"
+              name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_MAX_HEADER_BYTES"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_MAX_HEADER_BYTES"
+              name: {{ .Release.Name }}

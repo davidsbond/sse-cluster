@@ -166,7 +166,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	hosts := ctx.StringSlice("gossip.hosts")
 	hostname, _ := os.Hostname()
 
-	var actual []string
+	actual := []string{}
 	for _, host := range hosts {
 		if strings.Contains(host, hostname) {
 			continue
@@ -177,7 +177,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 
 	list.LocalNode().Meta = []byte(ctx.String("http.server.port"))
 
-	if len(hosts) > 0 {
+	if len(actual) > 0 {
 		logrus.WithField("hosts", actual).Info("joining sse cluster")
 
 		if _, err := list.Join(actual); err != nil {
