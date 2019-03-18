@@ -1,24 +1,26 @@
 package handler_test
 
 import (
-	"time"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/client"
 	"github.com/davidsbond/sse-cluster/handler"
 	"github.com/davidsbond/sse-cluster/message"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestHandler_Status(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name                string
@@ -55,6 +57,7 @@ func TestHandler_Status(t *testing.T) {
 
 func TestHandler_Publish(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name            string
@@ -108,6 +111,7 @@ func TestHandler_Publish(t *testing.T) {
 
 func TestHandler_Subscribe(t *testing.T) {
 	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
 
 	tt := []struct {
 		Name            string
