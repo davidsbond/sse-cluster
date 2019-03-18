@@ -1,9 +1,10 @@
 package broker_test
 
 import (
-	"gopkg.in/h2non/gock.v1"
 	"net"
 	"testing"
+
+	"gopkg.in/h2non/gock.v1"
 
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/message"
@@ -77,6 +78,35 @@ func TestBroker_Status(t *testing.T) {
 func TestBroker_NewClient(t *testing.T) {
 	t.Parallel()
 
+	tt := []struct {
+		Name    string
+		Channel string
+		Client  string
+		ExpectationFunc func(*mock.Mock)
+	}{
+		{
+			Name:    "It should create a new client",
+			Channel: "test",
+			Client:  "test",
+			ExpectationFunc: func(m *mock.Mock) {
+				m.On("LocalNode").Return(&memberlist.Node{
+					Name: "test",
+				})
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.Name, func(t *testing.T) {
+			m := &MockMemberlist{}
+			tc.ExpectationFunc(&m.Mock)
+		
+			b := broker.New(m, "")
+			cl := b.NewClient(tc.Channel, tc.Client)
+
+			assert.Equal(t, tc.Client, cl.ID())
+		})
+	}
 }
 
 func TestBroker_RemoveClient(t *testing.T) {
