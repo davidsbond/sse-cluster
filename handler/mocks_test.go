@@ -1,6 +1,8 @@
 package handler_test
 
 import (
+	"net/http/httptest"
+
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/davidsbond/sse-cluster/client"
 	"github.com/davidsbond/sse-cluster/message"
@@ -10,8 +12,27 @@ import (
 type (
 	MockBroker struct {
 		mock.Mock
+
+		clients map[string]*client.Client
+	}
+
+	ResponseRecorder struct {
+		*httptest.ResponseRecorder
+
+		close chan bool
 	}
 )
+
+func NewResponseRecorder() *ResponseRecorder {
+	return &ResponseRecorder{
+		ResponseRecorder: httptest.NewRecorder(),
+		close:            make(chan bool, 1),
+	}
+}
+
+func (rr *ResponseRecorder) CloseNotify() <-chan bool {
+	return rr.close
+}
 
 func (m *MockBroker) GetStatus() *broker.Status {
 	args := m.Called()
@@ -23,20 +44,25 @@ func (m *MockBroker) GetStatus() *broker.Status {
 	return nil
 }
 
-func (m *MockBroker) Publish(channel string, msg message.Message) error {
-	return m.Called(channel, msg).Error(0)
+func (m *MockBroker) Publish(channel string, msg message.Message) {
+	if cl, ok := m.clients[channel]; ok {
+		cl.Write(msg.Bytes())
+	}
+
+	m.Called(channel, msg)
 }
 
 func (m *MockBroker) NewClient(channel string, clientID string) *client.Client {
-	args := m.Called(channel, clientID)
+	m.Called(channel, clientID)
 
-	if args.Get(0) != nil {
-		return args.Get(0).(*client.Client)
-	}
+	cl := client.New(clientID)
+	m.clients[channel] = cl
 
-	return nil
+	return cl
 }
 
 func (m *MockBroker) RemoveClient(channel string, client string) {
+	delete(m.clients, channel)
+
 	m.Called(channel, client)
 }

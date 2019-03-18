@@ -26,7 +26,7 @@ type (
 	// operations against the broker from HTTP requests.
 	Broker interface {
 		GetStatus() *broker.Status
-		Publish(string, message.Message) error
+		Publish(string, message.Message)
 		NewClient(string, string) *client.Client
 		RemoveClient(string, string)
 	}
@@ -71,9 +71,7 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.broker.Publish(channelID, msg); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	h.broker.Publish(channelID, msg)
 }
 
 // Subscribe handles an incoming HTTP GET request and starts an event-stream with
