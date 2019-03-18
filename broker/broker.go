@@ -3,6 +3,7 @@ package broker
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"runtime"
 	"sync"
@@ -106,6 +107,13 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 
 	// For each member in the list
 	for _, member := range b.memberlist.Members() {
+		evtInfo := logrus.Fields{
+			"targetNodeId": member.Name,
+			"eventId":      msg.ID,
+			"event":        msg.Event,
+			"channel":      channelID,
+		}
+
 		// If we're looking at ourselves, or a node the message has already
 		// been through, skip.
 		if _, ok := ids[member.Name]; ok || member == b.memberlist.LocalNode() {
@@ -115,22 +123,38 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 		// Append this node's id to the list of node ids this event
 		// has already been to
 		msg.BeenTo = append(msg.BeenTo, b.memberlist.LocalNode().Name)
-
-		// Otherwise, create a new request to the publish endpoint for the list
-		// member. They store their HTTP port in the metadata
 		url := fmt.Sprintf("http://%s:%s/publish/%s", member.Addr, b.httpPort, channelID)
 
-		if _, err := b.http.Post(url, "application/json", bytes.NewBuffer(msg.JSON())); err != nil {
-			b.log.WithError(err).Error("failed to build http request")
+		// Send an HTTP POST request to the event publishing endpoint of the member
+		// node.
+		resp, err := b.http.Post(url, "application/json", bytes.NewBuffer(msg.JSON()))
+
+		if err != nil {
+			b.log.
+				WithFields(evtInfo).
+				WithError(err).
+				Error("failed to build http request")
+
 			continue
 		}
 
-		b.log.WithFields(logrus.Fields{
-			"targetNodeId": member.Name,
-			"eventId":      msg.ID,
-			"event":        msg.Event,
-			"channel":      channelID,
-		}).Info("propagated message to node")
+		// The publish endpoint should return a 200
+		if resp.StatusCode != http.StatusOK {
+			// If not, log the error and try the next node
+			data, _ := ioutil.ReadAll(resp.Body)
+			err := fmt.Errorf(string(data))
+
+			b.log.
+				WithFields(evtInfo).
+				WithError(err).
+				Error("failed to propagate event to node")
+
+			continue
+		}
+
+		b.log.
+			WithFields(evtInfo).
+			Info("propagated message to node")
 
 		// If we were successful, break, we will write the message to the first
 		// node that isn't in the been to list
