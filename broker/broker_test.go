@@ -168,4 +168,44 @@ func TestBroker_NewClient(t *testing.T) {
 func TestBroker_RemoveClient(t *testing.T) {
 	t.Parallel()
 
+	tt := []struct {
+		Name            string
+		Channel         string
+		Client          string
+		ExpectationFunc func(*mock.Mock)
+	}{
+		{
+			Name:    "It should create a new client",
+			Channel: "test",
+			Client:  "test",
+			ExpectationFunc: func(m *mock.Mock) {
+				m.On("NumMembers").Return(1)
+				m.On("LocalNode").Return(&memberlist.Node{
+					Name: "test",
+					Addr: net.ParseIP("127.0.0.1"),
+					Port: 1337,
+				})
+
+				m.On("Members").Return([]*memberlist.Node{})
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.Name, func(t *testing.T) {
+			m := &MockMemberlist{}
+			tc.ExpectationFunc(&m.Mock)
+
+			b := broker.New(m, "")
+			b.NewClient(tc.Channel, tc.Client)
+
+			status := b.Status()
+			assert.Len(t, status.Channels, 1)
+
+			b.RemoveClient(tc.Channel, tc.Client)
+
+			status = b.Status()
+			assert.Len(t, status.Channels, 0)
+		})
+	}
 }
