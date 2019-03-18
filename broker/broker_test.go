@@ -73,15 +73,71 @@ func TestBroker_Publish(t *testing.T) {
 func TestBroker_Status(t *testing.T) {
 	t.Parallel()
 
+	tt := []struct {
+		Name                string
+		ExpectationFunc     func(*mock.Mock)
+		ExpectedMemberCount int
+		ExpectedMembers     map[string]int
+		ExpectedChannelCount int
+	}{
+		{
+			Name:                "It obtain node status",
+			ExpectedChannelCount: 1,
+			ExpectedMemberCount: 1,
+			ExpectedMembers: map[string]int{
+				"127.0.0.1": 1337,
+			},
+			ExpectationFunc: func(m *mock.Mock) {
+				m.On("NumMembers").Return(1)
+				m.On("LocalNode").Return(&memberlist.Node{
+					Name: "test",
+					Addr: net.ParseIP("127.0.0.1"),
+					Port: 1337,
+				})
+
+				m.On("Members").Return([]*memberlist.Node{
+					{
+						Name: "test",
+						Addr: net.ParseIP("127.0.0.1"),
+						Port: 1337,
+					},
+				})
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.Name, func(t *testing.T) {
+			m := &MockMemberlist{}
+			tc.ExpectationFunc(&m.Mock)
+
+			b := broker.New(m, "")
+			b.NewClient("test", "test")
+
+			status := b.Status()
+
+			assert.NotNil(t, status)
+			assert.Equal(t, tc.ExpectedMemberCount, status.Gossip.MemberCount)
+			assert.Len(t, status.Channels, tc.ExpectedChannelCount)
+
+			for addr, port := range tc.ExpectedMembers {
+				act, ok := status.Gossip.Members[addr]
+
+				assert.True(t, ok)
+				assert.Equal(t, act, port)
+			}
+		})
+	}
+
 }
 
 func TestBroker_NewClient(t *testing.T) {
 	t.Parallel()
 
 	tt := []struct {
-		Name    string
-		Channel string
-		Client  string
+		Name            string
+		Channel         string
+		Client          string
 		ExpectationFunc func(*mock.Mock)
 	}{
 		{
@@ -100,7 +156,7 @@ func TestBroker_NewClient(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			m := &MockMemberlist{}
 			tc.ExpectationFunc(&m.Mock)
-		
+
 			b := broker.New(m, "")
 			cl := b.NewClient(tc.Channel, tc.Client)
 
