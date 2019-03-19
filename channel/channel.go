@@ -1,7 +1,6 @@
 package channel
 
 import (
-	"math/rand"
 	"sync"
 
 	"github.com/davidsbond/sse-cluster/client"
@@ -33,10 +32,11 @@ func New(id string) *Channel {
 func (c *Channel) Write(msg []byte) {
 	c.log.Info("writing message to channel")
 
-	client := c.randomClient()
-	client.Write(msg)
+	for _, cl := range c.clients {
+		cl.Write(msg)
 
-	c.log.WithField("client", client.ID()).Info("writing message to client")
+		c.log.WithField("client", cl.ID()).Info("writing message to client")
+	}
 }
 
 // ClientIDs returns an array of all client identifiers in this
@@ -80,24 +80,4 @@ func (c *Channel) RemoveClient(id string) {
 	defer c.mux.Unlock()
 
 	delete(c.clients, id)
-}
-
-// randomClient returns a random client in the map of clients for
-// the channel.
-func (c *Channel) randomClient() *client.Client {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	i := rand.Intn(len(c.clients))
-
-	var k string
-	for k = range c.clients {
-		if i == 0 {
-			break
-		}
-
-		i--
-	}
-
-	return c.clients[k]
 }

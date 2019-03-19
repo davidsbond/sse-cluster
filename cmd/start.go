@@ -110,14 +110,14 @@ func start(ctx *cli.Context) error {
 		}
 	}()
 
-	if err := handleExitSignal(svr, list); err != nil {
+	if err := handleExitSignal(br, svr, list); err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
 
 	return nil
 }
 
-func handleExitSignal(svr *http.Server, ml *memberlist.Memberlist) error {
+func handleExitSignal(b *broker.Broker, svr *http.Server, ml *memberlist.Memberlist) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
@@ -135,6 +135,9 @@ func handleExitSignal(svr *http.Server, ml *memberlist.Memberlist) error {
 	if err := svr.Shutdown(ctx); err != nil {
 		return err
 	}
+
+	// Wait for any broker operations to finish
+	b.Close()
 
 	return logrus.StandardLogger().Writer().Close()
 }

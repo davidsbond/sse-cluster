@@ -26,6 +26,7 @@ type (
 		mux        sync.Mutex
 		channels   map[string]*channel.Channel
 		log        *logrus.Entry
+		wg         sync.WaitGroup
 	}
 
 	// The Memberlist type represents the gossip implementation used by the
@@ -64,6 +65,12 @@ func New(ml Memberlist, cl *http.Client) *Broker {
 	return br
 }
 
+// Close blocks the goroutine until all asynchronous operations of the broker
+// have stopped.
+func (b *Broker) Close() {
+	b.wg.Wait()
+}
+
 // Status returns information on the broker. It contains the number of running
 // goroutines, the gossip members and total member count, as well as client information
 // for this broker.
@@ -100,6 +107,13 @@ func (b *Broker) Publish(channelID string, msg message.Message) {
 	}
 
 	b.mux.Unlock()
+
+	b.wg.Add(1)
+	go b.sendToNextNode(channelID, msg)
+}
+
+func (b *Broker) sendToNextNode(channelID string, msg message.Message) {
+	defer b.wg.Done()
 
 	// Obtain the individual node ids from the X-Been-To header
 	ids := make(map[string]interface{})
