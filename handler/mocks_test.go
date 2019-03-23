@@ -52,13 +52,13 @@ func (m *MockBroker) Publish(channel, client string, msg message.Message) {
 	m.Called(channel, client, msg)
 }
 
-func (m *MockBroker) NewClient(channel string, clientID string) *client.Client {
-	m.Called(channel, clientID)
+func (m *MockBroker) NewClient(channel string, clientID string) (*client.Client, error) {
+	args := m.Called(channel, clientID)
 
 	cl := client.New(clientID)
 	m.clients[channel] = cl
 
-	return cl
+	return cl, args.Error(1)
 }
 
 func (m *MockBroker) RemoveClient(channel string, client string) {

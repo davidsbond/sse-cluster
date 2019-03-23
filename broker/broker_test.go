@@ -65,7 +65,7 @@ func TestBroker_Publish(t *testing.T) {
 			tc.ExpectationFunc(&m.Mock, req)
 
 			b := broker.New(m, http.DefaultClient)
-			c := b.NewClient(tc.Channel, tc.Client)
+			c, _ := b.NewClient(tc.Channel, tc.Client)
 
 			b.Publish(tc.Channel, "", tc.Message)
 
@@ -170,7 +170,7 @@ func TestBroker_NewClient(t *testing.T) {
 			tc.ExpectationFunc(&m.Mock)
 
 			b := broker.New(m, http.DefaultClient)
-			cl := b.NewClient(tc.Channel, tc.Client)
+			cl, _ := b.NewClient(tc.Channel, tc.Client)
 
 			assert.Equal(t, tc.Client, cl.ID())
 		})

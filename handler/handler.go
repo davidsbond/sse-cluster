@@ -27,7 +27,7 @@ type (
 	Broker interface {
 		Status() *broker.Status
 		Publish(string, string, message.Message)
-		NewClient(string, string) *client.Client
+		NewClient(string, string) (*client.Client, error)
 		RemoveClient(string, string)
 	}
 )
@@ -90,9 +90,13 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	// Generate a random id for the client, obtain the
-	// channel id from the url
-	clientID := xid.New().String()
+	// If X-Client-ID is set, use it as the client identifier
+	var clientID string
+	if clientID = r.Header.Get("X-Client-ID"); clientID == "" {
+		clientID = xid.New().String()
+	}
+
+	// Get the channel ID from the url params
 	channelID := vars["channel"]
 
 	reqInfo := logrus.Fields{
@@ -108,7 +112,12 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	client := h.broker.NewClient(channelID, clientID)
+	client, err := h.broker.NewClient(channelID, clientID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	for {
 		select {

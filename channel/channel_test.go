@@ -29,7 +29,7 @@ func TestChannel_Write(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := channel.New(tc.Channel)
-			cl := ch.AddClient(tc.Client)
+			cl, _ := ch.AddClient(tc.Client)
 
 			ch.Write(tc.Data)
 			data := <-cl.Messages()
@@ -58,7 +58,7 @@ func TestChannel_AddClient(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := channel.New(tc.Channel)
-			cl := ch.AddClient(tc.Client)
+			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Equal(t, tc.Client, cl.ID())
@@ -85,7 +85,7 @@ func TestChannel_ClientIDs(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := channel.New(tc.Channel)
-			cl := ch.AddClient(tc.Client)
+			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Contains(t, ch.ClientIDs(), cl.ID())
@@ -141,7 +141,7 @@ func TestChannel_RemoveClient(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := channel.New(tc.Channel)
-			cl := ch.AddClient(tc.Client)
+			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Equal(t, tc.Client, cl.ID())

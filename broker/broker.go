@@ -190,7 +190,7 @@ func (b *Broker) sendToNextNode(channelID string, msg message.Message) {
 
 // NewClient creates a new client for a given channel. If the channel does not
 // exist, it is created.
-func (b *Broker) NewClient(channelID, clientID string) *client.Client {
+func (b *Broker) NewClient(channelID, clientID string) (*client.Client, error) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -210,9 +210,7 @@ func (b *Broker) NewClient(channelID, clientID string) *client.Client {
 		"client":  clientID,
 	}).Info("created new client")
 
-	cl := ch.AddClient(clientID)
-
-	return cl
+	return ch.AddClient(clientID)
 }
 
 // RemoveClient removes a client from a channel. If the channel has no

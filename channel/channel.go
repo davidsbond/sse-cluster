@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/davidsbond/sse-cluster/client"
@@ -67,14 +68,18 @@ func (c *Channel) ClientIDs() []string {
 }
 
 // AddClient adds a new client to the channel
-func (c *Channel) AddClient(id string) *client.Client {
+func (c *Channel) AddClient(id string) (*client.Client, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
+
+	if _, ok := c.clients[id]; ok {
+		return nil, fmt.Errorf("failed to add client to channel %s, client with id %s already exists", c.id, id)
+	}
 
 	cl := client.New(id)
 	c.clients[id] = cl
 
-	return cl
+	return cl, nil
 }
 
 // NumClients returns the total number of clients for a

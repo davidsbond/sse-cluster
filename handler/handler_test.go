@@ -130,7 +130,7 @@ func TestHandler_Subscribe(t *testing.T) {
 				Data:  []byte("{}"),
 			},
 			ExpectationFunc: func(m *mock.Mock) {
-				m.On("NewClient", "success", mock.Anything).Return(nil)
+				m.On("NewClient", "success", mock.Anything).Return(nil, nil)
 				m.On("Publish", "success", mock.Anything, mock.Anything).Return(nil)
 				m.On("RemoveClient", "success", mock.Anything).Return(nil)
 			},
