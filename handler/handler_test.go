@@ -76,7 +76,7 @@ func TestHandler_Publish(t *testing.T) {
 			},
 			ExpectedCode: http.StatusOK,
 			ExpectationFunc: func(m *mock.Mock) {
-				m.On("Publish", "success", mock.Anything, mock.Anything).Return()
+				m.On("Publish", "success", mock.Anything, mock.Anything).Return(nil)
 			},
 		},
 		{

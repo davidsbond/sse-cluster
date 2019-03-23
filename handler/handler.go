@@ -26,7 +26,7 @@ type (
 	// operations against the broker from HTTP requests.
 	Broker interface {
 		Status() *broker.Status
-		Publish(string, string, message.Message)
+		Publish(string, string, message.Message) error
 		NewClient(string, string) (*client.Client, error)
 		RemoveClient(string, string)
 	}
@@ -121,8 +121,8 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		select {
-		case data := <-client.Messages():
-			if _, err := w.Write(data); err != nil {
+		case msg := <-client.Messages():
+			if _, err := w.Write(msg.Bytes()); err != nil {
 				h.log.WithError(err).WithFields(reqInfo).Error("failed to write data")
 				continue
 			}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/davidsbond/sse-cluster/channel"
+	"github.com/davidsbond/sse-cluster/message"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,13 +17,15 @@ func TestChannel_Write(t *testing.T) {
 		Name    string
 		Client  string
 		Channel string
-		Data    []byte
+		Message message.Message
 	}{
 		{
 			Name:    "It should write a message",
 			Client:  "test",
 			Channel: "test",
-			Data:    []byte("test"),
+			Message: message.Message{
+				Data: []byte("test"),
+			},
 		},
 	}
 
@@ -31,10 +34,10 @@ func TestChannel_Write(t *testing.T) {
 			ch := channel.New(tc.Channel)
 			cl, _ := ch.AddClient(tc.Client)
 
-			ch.Write(tc.Data)
-			data := <-cl.Messages()
+			ch.Write(tc.Message)
+			msg := <-cl.Messages()
 
-			assert.Equal(t, tc.Data, data)
+			assert.Equal(t, tc.Message, msg)
 		})
 	}
 }

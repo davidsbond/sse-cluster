@@ -1,11 +1,15 @@
 package client
 
+import (
+	"github.com/davidsbond/sse-cluster/message"
+)
+
 type (
 	// The Client type represents a single client connected to the
 	// broker
 	Client struct {
-		id   string
-		data chan []byte
+		id       string
+		messages chan message.Message
 	}
 )
 
@@ -13,8 +17,8 @@ type (
 // identifier.
 func New(id string) *Client {
 	return &Client{
-		id:   id,
-		data: make(chan []byte, 1),
+		id:       id,
+		messages: make(chan message.Message, 1),
 	}
 }
 
@@ -24,11 +28,11 @@ func (c *Client) ID() string {
 }
 
 // Write writes a given array of bytes to a client
-func (c *Client) Write(data []byte) {
-	c.data <- data
+func (c *Client) Write(msg message.Message) {
+	c.messages <- msg
 }
 
 // Messages returns a read-only channel for this client's messages.
-func (c *Client) Messages() <-chan []byte {
-	return c.data
+func (c *Client) Messages() <-chan message.Message {
+	return c.messages
 }

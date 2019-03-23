@@ -71,7 +71,7 @@ func TestBroker_Publish(t *testing.T) {
 
 			result := <-c.Messages()
 
-			assert.Equal(t, tc.Message.Bytes(), result)
+			assert.Equal(t, tc.Message, result)
 
 			<-time.After(time.Millisecond * 250)
 			assert.Equal(t, true, gock.IsDone())

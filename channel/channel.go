@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/davidsbond/sse-cluster/client"
+	"github.com/davidsbond/sse-cluster/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,25 +31,47 @@ func New(id string) *Channel {
 }
 
 // WriteTo writes a message directly to a given client
-func (c *Channel) WriteTo(clientID string, msg []byte) {
-	c.log.WithField("clientId", clientID).Info("writing message to client")
+func (c *Channel) WriteTo(clientID string, msg message.Message) error {
+	c.log.WithFields(logrus.Fields{
+		"clientId": clientID,
+		"eventId":  msg.ID,
+		"event":    msg.Event,
+	}).Info("writing message to client")
 
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
 	if cl, ok := c.clients[clientID]; ok {
 		cl.Write(msg)
+
+		c.log.WithFields(logrus.Fields{
+			"client":  cl.ID(),
+			"eventId": msg.ID,
+			"event":   msg.Event,
+		}).Info("wrote message to client")
 	}
+
+	return fmt.Errorf("failed to write message, client %s does not exist in channel %s", clientID, c.id)
 }
 
 // Write writes a given message to all clients in the channel
-func (c *Channel) Write(msg []byte) {
-	c.log.Info("writing message to channel")
+func (c *Channel) Write(msg message.Message) {
+	c.log.WithFields(logrus.Fields{
+		"eventId": msg.ID,
+		"event":   msg.Event,
+	}).Info("writing message to channel")
+
+	c.mux.Lock()
+	defer c.mux.Unlock()
 
 	for _, cl := range c.clients {
 		cl.Write(msg)
 
-		c.log.WithField("client", cl.ID()).Info("writing message to client")
+		c.log.WithFields(logrus.Fields{
+			"client":  cl.ID(),
+			"eventId": msg.ID,
+			"event":   msg.Event,
+		}).Info("wrote message to client")
 	}
 }
 
