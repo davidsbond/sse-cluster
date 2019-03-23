@@ -76,7 +76,7 @@ func TestHandler_Publish(t *testing.T) {
 			},
 			ExpectedCode: http.StatusOK,
 			ExpectationFunc: func(m *mock.Mock) {
-				m.On("Publish", "success", mock.Anything).Return()
+				m.On("Publish", "success", mock.Anything, mock.Anything).Return()
 			},
 		},
 		{
@@ -131,7 +131,7 @@ func TestHandler_Subscribe(t *testing.T) {
 			},
 			ExpectationFunc: func(m *mock.Mock) {
 				m.On("NewClient", "success", mock.Anything).Return(nil)
-				m.On("Publish", "success", mock.Anything).Return(nil)
+				m.On("Publish", "success", mock.Anything, mock.Anything).Return(nil)
 				m.On("RemoveClient", "success", mock.Anything).Return(nil)
 			},
 		},
@@ -152,7 +152,7 @@ func TestHandler_Subscribe(t *testing.T) {
 			go mux.ServeHTTP(w, r)
 
 			<-time.After(time.Millisecond * 100)
-			m.Publish(tc.Channel, tc.Message)
+			m.Publish(tc.Channel, "", tc.Message)
 			<-time.After(time.Millisecond * 100)
 			w.close <- true
 			<-time.After(time.Millisecond * 100)

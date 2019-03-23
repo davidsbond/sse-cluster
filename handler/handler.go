@@ -26,7 +26,7 @@ type (
 	// operations against the broker from HTTP requests.
 	Broker interface {
 		Status() *broker.Status
-		Publish(string, message.Message)
+		Publish(string, string, message.Message)
 		NewClient(string, string) *client.Client
 		RemoveClient(string, string)
 	}
@@ -60,6 +60,7 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	channelID := vars["channel"]
+	clientID := vars["client"]
 
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		http.Error(w, "invalid json in request", http.StatusBadRequest)
@@ -71,7 +72,7 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.broker.Publish(channelID, msg)
+	h.broker.Publish(channelID, clientID, msg)
 }
 
 // Subscribe handles an incoming HTTP GET request and starts an event-stream with

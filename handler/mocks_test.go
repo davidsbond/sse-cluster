@@ -44,12 +44,12 @@ func (m *MockBroker) Status() *broker.Status {
 	return nil
 }
 
-func (m *MockBroker) Publish(channel string, msg message.Message) {
+func (m *MockBroker) Publish(channel, client string, msg message.Message) {
 	if cl, ok := m.clients[channel]; ok {
 		cl.Write(msg.Bytes())
 	}
 
-	m.Called(channel, msg)
+	m.Called(channel, client, msg)
 }
 
 func (m *MockBroker) NewClient(channel string, clientID string) *client.Client {

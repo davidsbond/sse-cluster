@@ -28,7 +28,19 @@ func New(id string) *Channel {
 	}
 }
 
-// Write writes a given message to a random client in the channel
+// WriteTo writes a message directly to a given client
+func (c *Channel) WriteTo(clientID string, msg []byte) {
+	c.log.WithField("clientId", clientID).Info("writing message to client")
+
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	if cl, ok := c.clients[clientID]; ok {
+		cl.Write(msg)
+	}
+}
+
+// Write writes a given message to all clients in the channel
 func (c *Channel) Write(msg []byte) {
 	c.log.Info("writing message to channel")
 

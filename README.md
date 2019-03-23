@@ -94,8 +94,3 @@ Configuration is provided to a node either via environment variables or command-
 | `gossip.secretKey`                | `GOSSIP_SECRET_KEY`               | The key used to initialize the primary encryption key in a keyring                                 | `N/A`     |
 | `http.client.timeout`             | `HTTP_CLIENT_TIMEOUT`             | The time limit for HTTP requests made by the client                                                | `10s`     |
 | `http.server.port`                | `HTTP_SERVER_PORT`                | The port to use for listening to HTTP requests                                                     | `8080`    |
-| `http.server.read-timeout`        | `HTTP_SERVER_READ_TIMEOUT`        | The maximum duration for the HTTP server to read an entire request, including the body.            | `10s`     |
-| `http.server.write-timeout`       | `HTTP_SERVER_WRITE_TIMEOUT`       | The maximum duration for the HTTP server to wait before timing out writes of a response.           | `10s`     |
-| `http.server.idle-timeout`        | `HTTP_SERVER_IDLE_TIMEOUT`        | The maximum duration for the HTTP server to wait for the next request when keep-alives are enabled | `10s`     |
-| `http.server.read-header-timeout` | `HTTP_SERVER_READ_HEADER_TIMEOUT` | The amount of time allowed for the HTTP server to read request headers.                            | `10s`     |
-| `http.server.max-header-bytes`    | `HTTP_SERVER_MAX_HEADER_BYTES`    | The maximum number of bytes the server will read parsing the request header's keys and values      | `1048576` |

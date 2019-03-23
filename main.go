@@ -15,7 +15,6 @@ var (
 func main() {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetReportCaller(true)
 
 	app := cli.NewApp()
 	app.Name = "sse-cluster"

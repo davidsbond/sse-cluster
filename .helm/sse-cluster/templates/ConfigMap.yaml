@@ -14,8 +14,3 @@ data:
   GOSSIP_PORT: "{{ .Values.node.gossip.port }}"
   HTTP_CLIENT_TIMEOUT: "{{ .Values.node.http.client.timeout }}"
   HTTP_SERVER_PORT: "{{ .Values.node.http.server.port }}"
-  HTTP_SERVER_READ_TIMEOUT: "{{ .Values.node.http.server.readTimeout }}"
-  HTTP_SERVER_READ_HEADER_TIMEOUT: "{{ .Values.node.http.server.readHeaderTimeout }}"
-  HTTP_SERVER_IDLE_TIMEOUT: "{{ .Values.node.http.server.idleTimeout }}"
-  HTTP_SERVER_WRITE_TIMEOUT: "{{ .Values.node.http.server.writeTimeout }}"
-  HTTP_SERVER_MAX_HEADER_BYTES: "{{ .Values.node.http.server.maxHeaderBytes }}"

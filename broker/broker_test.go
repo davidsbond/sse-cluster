@@ -1,10 +1,10 @@
 package broker_test
 
 import (
-	"time"
 	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	"gopkg.in/h2non/gock.v1"
 
@@ -41,6 +41,8 @@ func TestBroker_Publish(t *testing.T) {
 					Name: "test",
 				})
 
+				m.On("NumMembers").Return(2)
+
 				m.On("Members").Return([]*memberlist.Node{
 					{
 						Name: "test",
@@ -65,7 +67,7 @@ func TestBroker_Publish(t *testing.T) {
 			b := broker.New(m, http.DefaultClient)
 			c := b.NewClient(tc.Channel, tc.Client)
 
-			b.Publish(tc.Channel, tc.Message)
+			b.Publish(tc.Channel, "", tc.Message)
 
 			result := <-c.Messages()
 

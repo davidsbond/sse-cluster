@@ -97,19 +97,29 @@ func (b *Broker) Status() *Status {
 	return health
 }
 
-// Publish writes a given message to a client channel.
-func (b *Broker) Publish(channelID string, msg message.Message) {
+// Publish writes a given message to a client. If no client identifier is specified,
+// the message is written to the entire channel
+func (b *Broker) Publish(channelID, clientID string, msg message.Message) {
 	b.mux.Lock()
 
-	// Write the message to the channel
 	if ch, ok := b.channels[channelID]; ok {
-		ch.Write(msg.Bytes())
+		// If a client identifier has been specified, write directly
+		// to the client.
+		if clientID != "" {
+			ch.WriteTo(clientID, msg.Bytes())
+		} else {
+			// Otherwise, rite the message to the channel
+			ch.Write(msg.Bytes())
+		}
 	}
 
 	b.mux.Unlock()
 
-	b.wg.Add(1)
-	go b.sendToNextNode(channelID, msg)
+	// If we're not the only member, propagate the event
+	if b.memberlist.NumMembers() > 1 {
+		b.wg.Add(1)
+		go b.sendToNextNode(channelID, msg)
+	}
 }
 
 func (b *Broker) sendToNextNode(channelID string, msg message.Message) {
