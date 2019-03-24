@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 )
 
 type (
@@ -27,7 +26,7 @@ type (
 		// The reconnection time to use when attempting to send the event. This must be an integer,
 		// specifying the reconnection time in milliseconds.
 		// If a non-integer value is specified, the field is ignored.
-		Retry time.Duration `json:"retry"`
+		Retry int `json:"retry"`
 
 		// Contains identifiers of previous nodes this event has been through
 		BeenTo []string `json:"been_to"`
@@ -56,13 +55,13 @@ func (m *Message) Bytes() []byte {
 		out.WriteRune('\n')
 	}
 
-	if m.Retry != 0 {
-		millis := m.Retry.Seconds() * 100
-
+	if m.Retry > 0 {
 		out.WriteString("retry: ")
-		out.WriteString(fmt.Sprint(millis))
+		out.WriteString(fmt.Sprint(m.Retry))
 		out.WriteRune('\n')
 	}
+
+	out.WriteRune('\n')
 
 	return out.Bytes()
 }
