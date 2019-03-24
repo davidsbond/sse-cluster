@@ -79,13 +79,6 @@ func TestHandler_Publish(t *testing.T) {
 				m.On("Publish", "success", mock.Anything, mock.Anything).Return(nil)
 			},
 		},
-		{
-			Name:            "When message fails validation, returns a 400",
-			Channel:         "channel",
-			Message:         message.Message{},
-			ExpectedCode:    http.StatusBadRequest,
-			ExpectationFunc: func(m *mock.Mock) {},
-		},
 	}
 
 	for _, tc := range tt {

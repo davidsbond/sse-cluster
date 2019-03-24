@@ -10,16 +10,14 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
-	validator "gopkg.in/go-playground/validator.v9"
 )
 
 type (
 	// The Handler type contains methods for handling inbound HTTP requests
 	// to the broker.
 	Handler struct {
-		broker    Broker
-		log       *logrus.Entry
-		validator *validator.Validate
+		broker Broker
+		log    *logrus.Entry
 	}
 
 	// The Broker interface defines methods the HTTP handlers use to perform
@@ -35,9 +33,8 @@ type (
 // New creates a new instance of the Handler type with the given broker
 func New(br Broker) *Handler {
 	return &Handler{
-		broker:    br,
-		log:       logrus.WithField("name", "handler"),
-		validator: validator.New(),
+		broker: br,
+		log:    logrus.WithField("name", "handler"),
 	}
 }
 
@@ -67,12 +64,9 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.validator.Struct(msg); err != nil {
-		http.Error(w, "invalid values in request", http.StatusBadRequest)
-		return
+	if err := h.broker.Publish(channelID, clientID, msg); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	h.broker.Publish(channelID, clientID, msg)
 }
 
 // Subscribe handles an incoming HTTP GET request and starts an event-stream with

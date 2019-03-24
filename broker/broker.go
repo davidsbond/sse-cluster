@@ -100,6 +100,12 @@ func (b *Broker) Status() *Status {
 // Publish writes a given message to a client. If no client identifier is specified,
 // the message is written to the entire channel
 func (b *Broker) Publish(channelID, clientID string, msg message.Message) error {
+	// If we're not the only member, propagate the event
+	if b.memberlist.NumMembers() > 1 {
+		b.wg.Add(1)
+		go b.sendToNextNode(channelID, msg)
+	}
+
 	b.mux.Lock()
 
 	ch, ok := b.channels[channelID]
@@ -115,15 +121,9 @@ func (b *Broker) Publish(channelID, clientID string, msg message.Message) error 
 
 		// Otherwise, write the message to the channel
 		ch.Write(msg)
-
-		// If we're not the only member, propagate the event
-		if b.memberlist.NumMembers() > 1 {
-			b.wg.Add(1)
-			go b.sendToNextNode(channelID, msg)
-		}
 	}
 
-	return fmt.Errorf("channel %s does not exist", channelID)
+	return nil
 }
 
 func (b *Broker) sendToNextNode(channelID string, msg message.Message) {
