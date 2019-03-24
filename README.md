@@ -25,7 +25,7 @@ A scalable [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API
 
   // Connect to a single node, or to a load balancer in-front
   // of many nodes
-  const es = new EventSource(`https://my-sse-cluster:8080/subscribe/${channel}`)
+  const es = new EventSource(`https://my-sse-cluster:8080/channel/${channel}`)
 
   // Handle the stream generically, all events will trigger this method
   es.onmessage = (e) => {
