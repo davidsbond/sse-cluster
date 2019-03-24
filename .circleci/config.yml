@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   docker-publish: circleci/docker-publish@0.1.6
+  golangci-lint: timakin/golangci-lint@0.1.0
 
 jobs:
   test:
@@ -47,6 +48,7 @@ workflows:
   development:
     jobs:
       - test
+       - golangci-lint/lint
 
       # Publish all changes to master as 'latest'
       - docker-publish/publish:
