@@ -45,6 +45,11 @@ spec:
             configMapKeyRef:
               key: "HTTP_SERVER_PORT"
               name: {{ .Release.Name }}
+        - name: "HTTP_SERVER_ENABLE_CORS"
+          valueFrom:
+            configMapKeyRef:
+              key: "HTTP_SERVER_ENABLE_CORS"
+              name: {{ .Release.Name }}
         - name: "HTTP_CLIENT_TIMEOUT"
           valueFrom:
             configMapKeyRef:

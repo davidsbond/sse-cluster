@@ -94,3 +94,4 @@ Configuration is provided to a node either via environment variables or command-
 | `gossip.secretKey`                | `GOSSIP_SECRET_KEY`               | The key used to initialize the primary encryption key in a keyring                                 | `N/A`     |
 | `http.client.timeout`             | `HTTP_CLIENT_TIMEOUT`             | The time limit for HTTP requests made by the client                                                | `10s`     |
 | `http.server.port`                | `HTTP_SERVER_PORT`                | The port to use for listening to HTTP requests                                                     | `8080`    |
+| `http.server.cors.enabled`        | `HTTP_SERVER_ENABLE_CORS`         | If set, allows cross-origin requests on HTTP endpoints                                             | `false`   |

@@ -4,6 +4,8 @@ node:
   http: 
     server:
       port: 8080
+      cors:
+        enabled: true
 
     client:
       timeout: 10s

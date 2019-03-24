@@ -14,3 +14,4 @@ data:
   GOSSIP_PORT: "{{ .Values.node.gossip.port }}"
   HTTP_CLIENT_TIMEOUT: "{{ .Values.node.http.client.timeout }}"
   HTTP_SERVER_PORT: "{{ .Values.node.http.server.port }}"
+  HTTP_SERVER_ENABLE_CORS: "{{ .Values.node.http.server.cors.enabled }}"
