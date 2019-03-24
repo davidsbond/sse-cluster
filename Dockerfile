@@ -21,4 +21,3 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 USER container
 CMD [ "/bin/node" ]
-EXPOSE 8080
