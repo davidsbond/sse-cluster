@@ -2,6 +2,7 @@ package broker
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -103,30 +104,65 @@ func (b *Broker) Publish(channelID, clientID string, msg message.Message) error 
 	// If we're not the only member, propagate the event
 	if b.memberlist.NumMembers() > 1 {
 		b.wg.Add(1)
-		go b.sendToNextNode(channelID, msg)
+		go b.sendToNextNode(channelID, clientID, msg)
 	}
 
-	b.mux.Lock()
-
-	ch, ok := b.channels[channelID]
-
-	b.mux.Unlock()
-
-	if ok {
-		// If a client identifier has been specified, write directly
-		// to the client.
-		if clientID != "" {
-			return ch.WriteTo(clientID, msg)
-		}
-
-		// Otherwise, write the message to the channel
-		ch.Write(msg)
+	switch {
+	// If we've got no channel or client identifier, publish to all clients
+	// on all channels
+	case channelID == "" && clientID == "":
+		b.publishAll(msg)
+		return nil
+	// If we've got a channel identifier but no client identifier, write to
+	// the entire channel
+	case channelID != "" && clientID == "":
+		return b.publishChannel(channelID, msg)
+	// If we've got both a client and channel identifier, write to the client
+	// on the given channel
+	case channelID != "" && clientID != "":
+		return b.publishClient(channelID, clientID, msg)
+	default:
+		return errors.New("invalid channel/client identifier combination")
 	}
-
-	return nil
 }
 
-func (b *Broker) sendToNextNode(channelID string, msg message.Message) {
+func (b *Broker) publishAll(msg message.Message) {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
+	for _, ch := range b.channels {
+		b.mux.Unlock()
+
+		ch.Write(msg)
+
+		b.mux.Lock()
+	}
+}
+
+func (b *Broker) publishChannel(channelID string, msg message.Message) error {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
+	if ch, ok := b.channels[channelID]; ok {
+		ch.Write(msg)
+		return nil
+	}
+
+	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
+}
+
+func (b *Broker) publishClient(channelID, clientID string, msg message.Message) error {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
+	if ch, ok := b.channels[channelID]; ok {
+		return ch.WriteTo(clientID, msg)
+	}
+
+	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
+}
+
+func (b *Broker) sendToNextNode(channelID, clientID string, msg message.Message) {
 	defer b.wg.Done()
 
 	// Obtain the individual node ids from the X-Been-To header
