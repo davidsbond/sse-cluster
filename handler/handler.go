@@ -60,7 +60,7 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 	clientID := vars["client"]
 
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
-		http.Error(w, "invalid json in request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
