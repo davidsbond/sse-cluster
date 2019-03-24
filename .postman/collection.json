@@ -1,0 +1,157 @@
+{
+	"info": {
+		"_postman_id": "d1a9d29e-cb60-474f-8554-f6ba376eabed",
+		"name": "github.com/davidsbond/sse-cluster",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Publish an event on all channels",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"12345\",\n\t\"event\": \"my-event\",\n\t\"data\": {\n\t\t\"some-key\": \"some-value\"\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{HTTP_SCHEME}}://{{HTTP_URL}}:{{HTTP_PORT}}/channel",
+					"protocol": "{{HTTP_SCHEME}}",
+					"host": [
+						"{{HTTP_URL}}"
+					],
+					"port": "{{HTTP_PORT}}",
+					"path": [
+						"channel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Publish an event to a channel",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"12345\",\n\t\"event\": \"my-event\",\n\t\"data\": {\n\t\t\"some-key\": \"some-value\"\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{HTTP_SCHEME}}://{{HTTP_URL}}:{{HTTP_PORT}}/channel/{{CHANNEL_NAME}}",
+					"protocol": "{{HTTP_SCHEME}}",
+					"host": [
+						"{{HTTP_URL}}"
+					],
+					"port": "{{HTTP_PORT}}",
+					"path": [
+						"channel",
+						"{{CHANNEL_NAME}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Publish an event to a specific client on the channel",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"12345\",\n\t\"event\": \"my-event\",\n\t\"data\": {\n\t\t\"some-key\": \"some-value\"\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{HTTP_SCHEME}}://{{HTTP_URL}}:{{HTTP_PORT}}/channel/{{CHANNEL_NAME}}/client/{{CLIENT_NAME}}",
+					"protocol": "{{HTTP_SCHEME}}",
+					"host": [
+						"{{HTTP_URL}}"
+					],
+					"port": "{{HTTP_PORT}}",
+					"path": [
+						"channel",
+						"{{CHANNEL_NAME}}",
+						"client",
+						"{{CLIENT_NAME}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "1dcce182-bc5e-43fb-af64-c88183c2ba4c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "7945199c-9a62-4283-958c-4e44ce153880",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "4ed082ae-c31f-4910-bdc3-fd0ffa19b770",
+			"key": "HTTP_URL",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"id": "1d863321-fec8-4a6f-8a91-c282e100afb8",
+			"key": "HTTP_SCHEME",
+			"value": "http",
+			"type": "string"
+		},
+		{
+			"id": "4c466c0b-828b-4df6-a1a0-3b758c94ce7c",
+			"key": "HTTP_PORT",
+			"value": "8080",
+			"type": "string"
+		},
+		{
+			"id": "54797b1c-f580-4e44-b261-33ccb28d460d",
+			"key": "CHANNEL_NAME",
+			"value": "postman",
+			"type": "string"
+		},
+		{
+			"id": "212791ec-b2bf-4900-b415-9a9267973e5c",
+			"key": "CLIENT_NAME",
+			"value": "postman",
+			"type": "string"
+		}
+	]
+}
