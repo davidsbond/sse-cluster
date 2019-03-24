@@ -46,6 +46,11 @@ func Start() cli.Command {
 				EnvVar: "HTTP_SERVER_PORT",
 				Value:  "8080",
 			},
+			cli.BoolFlag{
+				Usage:  "If set, allows cross-origin requests on HTTP endpoints",
+				Name:   "http.server.cors.enabled",
+				EnvVar: "HTTP_SERVER_ENABLE_CORS",
+			},
 			cli.DurationFlag{
 				Name:   "http.client.timeout",
 				Usage:  "Sets the request timeout for the http client",
@@ -116,14 +121,23 @@ func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
 	mux := mux.NewRouter()
 
 	mux.HandleFunc("/status", h.Status).Methods("GET")
-	mux.HandleFunc("/subscribe/{channel}", h.Subscribe).Methods("GET")
-	mux.HandleFunc("/publish/{channel}", h.Publish).
+	mux.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
+
+	mux.HandleFunc("/channel", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
-	mux.HandleFunc("/publish/{channel}/client/{client}", h.Publish).
+	mux.HandleFunc("/channel/{channel}", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
+
+	mux.HandleFunc("/channel/{channel}/client/{client}", h.Publish).
+		Methods("POST").
+		Headers("Content-Type", "application/json")
+
+	if ctx.Bool("http.server.cors.enabled") {
+		mux.Use(handler.CORSMiddleware)
+	}
 
 	svr := &http.Server{
 		Handler:  mux,
