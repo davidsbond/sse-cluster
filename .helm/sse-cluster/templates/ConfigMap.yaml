@@ -4,14 +4,23 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Chart.Name }}
+    app: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app.kubernetes.io/name: {{ .Release.Name }}
+  {{- with .Values.configMap.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
+  # The service name will match that of the release. Pods in StatefulSet
+  # workloads are numbered ordinally from zero, so the first pod will always
+  # be zero. Because of this we can auto generate the gossip host for a node
+  # to join this chart's cluster.
   GOSSIP_HOSTS: "{{ .Release.Name }}-0.{{ .Release.Name }}"
-  GOSSIP_PORT: "{{ .Values.node.gossip.port }}"
-  HTTP_CLIENT_TIMEOUT: "{{ .Values.node.http.client.timeout }}"
-  HTTP_SERVER_PORT: "{{ .Values.node.http.server.port }}"
-  HTTP_SERVER_ENABLE_CORS: "{{ .Values.node.http.server.cors.enabled }}"
+
+  # Inject ConfigMap values directly as YAML
+  {{- with .Values.configMap.data }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.autoscaler.enabled -}}
 apiVersion: "autoscaling/v1"
 kind: "HorizontalPodAutoscaler"
 metadata:
@@ -9,6 +10,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app.kubernetes.io/name: {{ .Release.Name }}
+  {{- with .Values.autoscaler.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   scaleTargetRef:
     kind: "StatefulSet"
@@ -17,3 +22,4 @@ spec:
   minReplicas: {{ .Values.autoscaler.minReplicas }}
   maxReplicas: {{ .Values.autoscaler.maxReplicas }}
   targetCPUUtilizationPercentage: {{ .Values.autoscaler.targetCPUUsage }}
+{{- end -}}

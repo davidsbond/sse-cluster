@@ -1,24 +1,44 @@
-node:
-  replicas: 2
+statefulSet:
+  replicas: 1
 
-  http: 
-    server:
-      port: 8080
-      cors:
-        enabled: true
+  image:
+    repository: davidsbond/sse-cluster
+    tag: latest
+    pullPolicy: IfNotPresent
 
-    client:
-      timeout: 10s
+  annotations:
 
-  gossip:
-    port: 42000
-    secretKey: thisisatemporarykey
-
-image:
-  repository: "eu.gcr.io/chms-226211/sse-cluster"
-  tag: "latest"
+ingress:
+  enabled: false
+  annotations:
 
 autoscaler:
+  enabled: false
   minReplicas: 1
   maxReplicas: 3
-  targetCPUUsage: 75
+  targetCPUUsage: 60
+  annotations:
+
+secret:
+  gossipKey: thisisatemporarykey
+  annotations:
+
+service:
+  ports:
+  - protocol: "TCP"
+    name: gossip
+    port: 42000
+    targetPort: 42000
+  - protocol: "TCP"
+    name: http
+    port: 8080
+    targetPort: 8080
+  annotations:
+
+configMap:
+  data:
+    GOSSIP_PORT: 42000
+    HTTP_CLIENT_TIMEOUT: 10s
+    HTTP_SERVER_PORT: 8080
+    HTTP_SERVER_ENABLE_CORS: false
+  annotations:
