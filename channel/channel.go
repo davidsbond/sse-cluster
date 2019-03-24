@@ -65,7 +65,11 @@ func (c *Channel) Write(msg message.Message) {
 	defer c.mux.Unlock()
 
 	for _, cl := range c.clients {
+		c.mux.Unlock()
+
 		cl.Write(msg)
+
+		c.mux.Lock()
 
 		c.log.WithFields(logrus.Fields{
 			"client":  cl.ID(),
