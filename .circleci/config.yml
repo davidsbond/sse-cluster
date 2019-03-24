@@ -48,7 +48,7 @@ workflows:
   development:
     jobs:
       - test
-       - golangci-lint/lint
+      - golangci-lint/lint
 
       # Publish all changes to master as 'latest'
       - docker-publish/publish:
