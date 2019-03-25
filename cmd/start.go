@@ -121,7 +121,9 @@ func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
 	mux := mux.NewRouter()
 
 	mux.HandleFunc("/status", h.Status).Methods("GET")
+
 	mux.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
+	mux.HandleFunc("/channel/{channel}/client/{client}", h.Subscribe).Methods("GET")
 
 	mux.HandleFunc("/channel", h.Publish).
 		Methods("POST").

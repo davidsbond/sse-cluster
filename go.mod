@@ -1,5 +1,7 @@
 module github.com/davidsbond/sse-cluster
 
+go 1.12
+
 require (
 	github.com/gorilla/mux v1.7.0
 	github.com/hashicorp/memberlist v0.1.3

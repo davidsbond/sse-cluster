@@ -84,14 +84,13 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	// If X-Client-ID is set, use it as the client identifier
-	var clientID string
-	if clientID = r.Header.Get("X-Client-ID"); clientID == "" {
+	// Get the channel/client IDs from the url params
+	channelID := vars["channel"]
+	clientID, ok := vars["client"]
+
+	if !ok {
 		clientID = xid.New().String()
 	}
-
-	// Get the channel ID from the url params
-	channelID := vars["channel"]
 
 	reqInfo := logrus.Fields{
 		"client":  clientID,
