@@ -1,10 +1,11 @@
 # sse-cluster
 
-[![CircleCI](https://circleci.com/gh/davidsbond/sse-cluster.svg?style=shield)](https://circleci.com/gh/davidsbond/sse-cluster)
-[![Coverage Status](https://coveralls.io/repos/github/davidsbond/sse-cluster/badge.svg?branch=master)](https://coveralls.io/github/davidsbond/sse-cluster?branch=master)
-[![GoDoc](https://godoc.org/github.com/davidsbond/sse-cluster?status.svg)](http://godoc.org/github.com/davidsbond/sse-cluster)
-[![Go Report Card](https://goreportcard.com/badge/github.com/davidsbond/sse-cluster)](https://goreportcard.com/report/github.com/davidsbond/sse-cluster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![CircleCI](https://circleci.com/gh/davidsbond/sse-cluster.svg?style=shield)](https://circleci.com/gh/davidsbond/sse-cluster)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/davidsbond/sse-cluster.svg)
+[![Coverage Status](https://coveralls.io/repos/github/davidsbond/sse-cluster/badge.svg?branch=master)](https://coveralls.io/github/davidsbond/sse-cluster?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/davidsbond/sse-cluster)](https://goreportcard.com/report/github.com/davidsbond/sse-cluster)
+[![GoDoc](https://godoc.org/github.com/davidsbond/sse-cluster?status.svg)](http://godoc.org/github.com/davidsbond/sse-cluster)
 
 A scalable [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) broker
 
