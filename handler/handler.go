@@ -1,3 +1,5 @@
+// Package handler contains types for interacting with the broker implementation
+// via HTTP.
 package handler
 
 import (

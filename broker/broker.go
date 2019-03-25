@@ -1,3 +1,4 @@
+// Package broker contains the broker implementataion.
 package broker
 
 import (
@@ -95,7 +96,9 @@ func (b *Broker) Status() *Status {
 }
 
 // Publish writes a given message to a client. If no client identifier is specified,
-// the message is written to the entire channel
+// the message is written to the entire channel. If running in a cluster, the event
+// is forwarded asynchronously via HTTP to the next node whose id does not exist in
+// the message's BeenTo field.
 func (b *Broker) Publish(channelID, clientID string, msg Message) error {
 	// If we're not the only member, propagate the event
 	if b.memberlist.NumMembers() > 1 {
