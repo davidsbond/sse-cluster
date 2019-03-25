@@ -27,7 +27,7 @@ func Start() cli.Command {
 			cli.StringSliceFlag{
 				Name:   "gossip.hosts",
 				EnvVar: "GOSSIP_HOSTS",
-				Usage:  "The initial hosts the node should connect to, should be a comma-seperated string of hosts",
+				Usage:  "The initial hosts the node should connect to, should be a comma-separated string of hosts",
 			},
 			cli.IntFlag{
 				Usage:  "The port to use for communications via gossip protocol",
@@ -76,7 +76,7 @@ func start(ctx *cli.Context) error {
 	hnd := handler.New(br)
 	svr := createHTTPServer(ctx, hnd)
 
-	// Execute ListenAndServe in a seperate goroutine as it blocks
+	// Execute ListenAndServe in a separate goroutine as it blocks
 	go func() {
 		logrus.Info("starting http server")
 
