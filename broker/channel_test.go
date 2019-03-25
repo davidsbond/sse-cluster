@@ -1,10 +1,9 @@
-package channel_test
+package broker_test
 
 import (
 	"testing"
 
-	"github.com/davidsbond/sse-cluster/channel"
-	"github.com/davidsbond/sse-cluster/message"
+	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,13 +16,13 @@ func TestChannel_Write(t *testing.T) {
 		Name    string
 		Client  string
 		Channel string
-		Message message.Message
+		Message broker.Message
 	}{
 		{
 			Name:    "It should write a message",
 			Client:  "test",
 			Channel: "test",
-			Message: message.Message{
+			Message: broker.Message{
 				Data: []byte("test"),
 			},
 		},
@@ -31,7 +30,7 @@ func TestChannel_Write(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			ch := channel.New(tc.Channel)
+			ch := broker.NewChannel(tc.Channel)
 			cl, _ := ch.AddClient(tc.Client)
 
 			ch.Write(tc.Message)
@@ -60,7 +59,7 @@ func TestChannel_AddClient(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			ch := channel.New(tc.Channel)
+			ch := broker.NewChannel(tc.Channel)
 			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
@@ -87,7 +86,7 @@ func TestChannel_ClientIDs(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			ch := channel.New(tc.Channel)
+			ch := broker.NewChannel(tc.Channel)
 			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
@@ -116,7 +115,7 @@ func TestChannel_NumClients(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			ch := channel.New(tc.Channel)
+			ch := broker.NewChannel(tc.Channel)
 			ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)
@@ -143,7 +142,7 @@ func TestChannel_RemoveClient(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			ch := channel.New(tc.Channel)
+			ch := broker.NewChannel(tc.Channel)
 			cl, _ := ch.AddClient(tc.Client)
 
 			assert.NotNil(t, ch)

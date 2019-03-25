@@ -9,10 +9,6 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/davidsbond/sse-cluster/channel"
-	"github.com/davidsbond/sse-cluster/client"
-	"github.com/davidsbond/sse-cluster/message"
-
 	"github.com/hashicorp/memberlist"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +21,7 @@ type (
 		memberlist Memberlist
 		http       *http.Client
 		mux        sync.Mutex
-		channels   map[string]*channel.Channel
+		channels   map[string]*Channel
 		log        *logrus.Entry
 		wg         sync.WaitGroup
 	}
@@ -55,7 +51,7 @@ type (
 func New(ml Memberlist, cl *http.Client) *Broker {
 	br := &Broker{
 		memberlist: ml,
-		channels:   make(map[string]*channel.Channel),
+		channels:   make(map[string]*Channel),
 		http:       cl,
 		log: logrus.WithFields(logrus.Fields{
 			"name":     "broker",
@@ -100,7 +96,7 @@ func (b *Broker) Status() *Status {
 
 // Publish writes a given message to a client. If no client identifier is specified,
 // the message is written to the entire channel
-func (b *Broker) Publish(channelID, clientID string, msg message.Message) error {
+func (b *Broker) Publish(channelID, clientID string, msg Message) error {
 	// If we're not the only member, propagate the event
 	if b.memberlist.NumMembers() > 1 {
 		b.wg.Add(1)
@@ -126,7 +122,7 @@ func (b *Broker) Publish(channelID, clientID string, msg message.Message) error 
 	}
 }
 
-func (b *Broker) publishAll(msg message.Message) {
+func (b *Broker) publishAll(msg Message) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -139,7 +135,7 @@ func (b *Broker) publishAll(msg message.Message) {
 	}
 }
 
-func (b *Broker) publishChannel(channelID string, msg message.Message) error {
+func (b *Broker) publishChannel(channelID string, msg Message) error {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -151,7 +147,7 @@ func (b *Broker) publishChannel(channelID string, msg message.Message) error {
 	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
 }
 
-func (b *Broker) publishClient(channelID, clientID string, msg message.Message) error {
+func (b *Broker) publishClient(channelID, clientID string, msg Message) error {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -162,7 +158,7 @@ func (b *Broker) publishClient(channelID, clientID string, msg message.Message) 
 	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
 }
 
-func (b *Broker) sendToNextNode(channelID, clientID string, msg message.Message) {
+func (b *Broker) sendToNextNode(channelID, clientID string, msg Message) {
 	defer b.wg.Done()
 
 	// Obtain the individual node ids from the X-Been-To header
@@ -230,14 +226,14 @@ func (b *Broker) sendToNextNode(channelID, clientID string, msg message.Message)
 
 // NewClient creates a new client for a given channel. If the channel does not
 // exist, it is created.
-func (b *Broker) NewClient(channelID, clientID string) (*client.Client, error) {
+func (b *Broker) NewClient(channelID, clientID string) (*Client, error) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
 	ch, ok := b.channels[channelID]
 
 	if !ok {
-		ch = channel.New(channelID)
+		ch = NewChannel(channelID)
 		b.channels[channelID] = ch
 
 		b.log.WithFields(logrus.Fields{

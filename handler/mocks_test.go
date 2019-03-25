@@ -4,8 +4,6 @@ import (
 	"net/http/httptest"
 
 	"github.com/davidsbond/sse-cluster/broker"
-	"github.com/davidsbond/sse-cluster/client"
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -13,7 +11,7 @@ type (
 	MockBroker struct {
 		mock.Mock
 
-		clients map[string]*client.Client
+		clients map[string]*broker.Client
 	}
 
 	ResponseRecorder struct {
@@ -44,7 +42,7 @@ func (m *MockBroker) Status() *broker.Status {
 	return nil
 }
 
-func (m *MockBroker) Publish(channel, client string, msg message.Message) error {
+func (m *MockBroker) Publish(channel, client string, msg broker.Message) error {
 	if cl, ok := m.clients[channel]; ok {
 		cl.Write(msg)
 	}
@@ -54,10 +52,10 @@ func (m *MockBroker) Publish(channel, client string, msg message.Message) error 
 	return args.Error(0)
 }
 
-func (m *MockBroker) NewClient(channel string, clientID string) (*client.Client, error) {
+func (m *MockBroker) NewClient(channel string, clientID string) (*broker.Client, error) {
 	args := m.Called(channel, clientID)
 
-	cl := client.New(clientID)
+	cl := broker.NewClient(clientID)
 	m.clients[channel] = cl
 
 	return cl, args.Error(1)

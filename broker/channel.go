@@ -1,11 +1,9 @@
-package channel
+package broker
 
 import (
 	"fmt"
 	"sync"
 
-	"github.com/davidsbond/sse-cluster/client"
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,23 +13,23 @@ type (
 	// are published to a channel, a client is chosen at random
 	Channel struct {
 		id      string
-		clients map[string]*client.Client
+		clients map[string]*Client
 		mux     sync.Mutex
 		log     *logrus.Entry
 	}
 )
 
-// New creates a new instance of the Channel type using the given identifier
-func New(id string) *Channel {
+// NewChannel creates a new instance of the Channel type using the given identifier
+func NewChannel(id string) *Channel {
 	return &Channel{
 		id:      id,
-		clients: make(map[string]*client.Client),
+		clients: make(map[string]*Client),
 		log:     logrus.WithField("channel", id),
 	}
 }
 
 // WriteTo writes a message directly to a given client
-func (c *Channel) WriteTo(clientID string, msg message.Message) error {
+func (c *Channel) WriteTo(clientID string, msg Message) error {
 	c.log.WithFields(logrus.Fields{
 		"clientId": clientID,
 		"eventId":  msg.ID,
@@ -55,7 +53,7 @@ func (c *Channel) WriteTo(clientID string, msg message.Message) error {
 }
 
 // Write writes a given message to all clients in the channel
-func (c *Channel) Write(msg message.Message) {
+func (c *Channel) Write(msg Message) {
 	c.log.WithFields(logrus.Fields{
 		"eventId": msg.ID,
 		"event":   msg.Event,
@@ -95,7 +93,7 @@ func (c *Channel) ClientIDs() []string {
 }
 
 // AddClient adds a new client to the channel
-func (c *Channel) AddClient(id string) (*client.Client, error) {
+func (c *Channel) AddClient(id string) (*Client, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -103,7 +101,7 @@ func (c *Channel) AddClient(id string) (*client.Client, error) {
 		return nil, fmt.Errorf("failed to add client to channel %s, client with id %s already exists", c.id, id)
 	}
 
-	cl := client.New(id)
+	cl := NewClient(id)
 	c.clients[id] = cl
 
 	return cl, nil

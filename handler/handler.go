@@ -5,8 +5,6 @@ import (
 	"net/http"
 
 	"github.com/davidsbond/sse-cluster/broker"
-	"github.com/davidsbond/sse-cluster/client"
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
@@ -24,8 +22,8 @@ type (
 	// operations against the broker from HTTP requests.
 	Broker interface {
 		Status() *broker.Status
-		Publish(string, string, message.Message) error
-		NewClient(string, string) (*client.Client, error)
+		Publish(string, string, broker.Message) error
+		NewClient(string, string) (*broker.Client, error)
 		RemoveClient(string, string)
 	}
 )
@@ -53,7 +51,7 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 // Publish handles an incoming HTTP POST request and writes a message to the broker.
 // Returns a 400 if invalid JSON has been provided.
 func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
-	var msg message.Message
+	var msg broker.Message
 
 	vars := mux.Vars(r)
 	channelID := vars["channel"]

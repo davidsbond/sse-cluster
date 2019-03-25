@@ -9,9 +9,7 @@ import (
 	"time"
 
 	"github.com/davidsbond/sse-cluster/broker"
-	"github.com/davidsbond/sse-cluster/client"
 	"github.com/davidsbond/sse-cluster/handler"
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -62,14 +60,14 @@ func TestHandler_Publish(t *testing.T) {
 	tt := []struct {
 		Name            string
 		Channel         string
-		Message         message.Message
+		Message         broker.Message
 		ExpectedCode    int
 		ExpectationFunc func(*mock.Mock)
 	}{
 		{
 			Name:    "When message is published successfully, returns a 200",
 			Channel: "success",
-			Message: message.Message{
+			Message: broker.Message{
 				ID:    "test",
 				Event: "test",
 				Data:  []byte("{}"),
@@ -83,7 +81,7 @@ func TestHandler_Publish(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			m := &MockBroker{clients: make(map[string]*client.Client)}
+			m := &MockBroker{clients: make(map[string]*broker.Client)}
 			h := handler.New(m)
 
 			tc.ExpectationFunc(&m.Mock)
@@ -109,7 +107,7 @@ func TestHandler_Subscribe(t *testing.T) {
 	tt := []struct {
 		Name            string
 		Channel         string
-		Message         message.Message
+		Message         broker.Message
 		ExpectedCode    int
 		ExpectationFunc func(*mock.Mock)
 	}{
@@ -117,7 +115,7 @@ func TestHandler_Subscribe(t *testing.T) {
 			Name:         "When subscription is successful, writes a 200",
 			Channel:      "success",
 			ExpectedCode: http.StatusOK,
-			Message: message.Message{
+			Message: broker.Message{
 				ID:    "test",
 				Event: "test",
 				Data:  []byte("{}"),
@@ -132,7 +130,7 @@ func TestHandler_Subscribe(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			m := &MockBroker{clients: make(map[string]*client.Client)}
+			m := &MockBroker{clients: make(map[string]*broker.Client)}
 			h := handler.New(m)
 
 			tc.ExpectationFunc(&m.Mock)

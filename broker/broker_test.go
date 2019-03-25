@@ -9,7 +9,6 @@ import (
 	"gopkg.in/h2non/gock.v1"
 
 	"github.com/davidsbond/sse-cluster/broker"
-	"github.com/davidsbond/sse-cluster/message"
 	"github.com/hashicorp/memberlist"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -24,14 +23,14 @@ func TestBroker_Publish(t *testing.T) {
 		Name            string
 		Channel         string
 		Client          string
-		Message         message.Message
+		Message         broker.Message
 		ExpectationFunc func(*mock.Mock, *gock.Request)
 	}{
 		{
 			Name:    "It should write a message to the client",
 			Channel: "test",
 			Client:  "test",
-			Message: message.Message{
+			Message: broker.Message{
 				ID:    "test",
 				Event: "test",
 				Data:  []byte("{}"),
