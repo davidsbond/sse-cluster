@@ -1,8 +1,6 @@
 package handler_test
 
 import (
-	"net/http/httptest"
-
 	"github.com/davidsbond/sse-cluster/broker"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,24 +11,7 @@ type (
 
 		clients map[string]*broker.Client
 	}
-
-	ResponseRecorder struct {
-		*httptest.ResponseRecorder
-
-		close chan bool
-	}
 )
-
-func NewResponseRecorder() *ResponseRecorder {
-	return &ResponseRecorder{
-		ResponseRecorder: httptest.NewRecorder(),
-		close:            make(chan bool, 1),
-	}
-}
-
-func (rr *ResponseRecorder) CloseNotify() <-chan bool {
-	return rr.close
-}
 
 func (m *MockBroker) Status() *broker.Status {
 	args := m.Called()

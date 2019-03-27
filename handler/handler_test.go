@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -136,16 +137,22 @@ func TestHandler_Subscribe(t *testing.T) {
 			tc.ExpectationFunc(&m.Mock)
 
 			r := httptest.NewRequest("GET", "/subscribe/"+tc.Channel, nil)
-			w := NewResponseRecorder()
+			w := httptest.NewRecorder()
 
 			mux := mux.NewRouter()
 			mux.HandleFunc("/subscribe/{channel}", h.Subscribe)
-			go mux.ServeHTTP(w, r)
+
+			ctx, cancel := context.WithCancel(r.Context())
+			go mux.ServeHTTP(w, r.WithContext(ctx))
 
 			<-time.After(time.Millisecond * 100)
-			m.Publish(tc.Channel, "", tc.Message)
+
+			if err := m.Publish(tc.Channel, "", tc.Message); err != nil {
+				assert.Fail(t, err.Error())
+			}
+
 			<-time.After(time.Millisecond * 100)
-			w.close <- true
+			cancel()
 			<-time.After(time.Millisecond * 100)
 
 			assert.Equal(t, tc.ExpectedCode, w.Code)
