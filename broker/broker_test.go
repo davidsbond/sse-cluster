@@ -66,7 +66,10 @@ func TestBroker_Publish(t *testing.T) {
 			b := broker.New(m, http.DefaultClient)
 			c, _ := b.NewClient(tc.Channel, tc.Client)
 
-			b.Publish(tc.Channel, "", tc.Message)
+			if err := b.Publish(tc.Channel, "", tc.Message); err != nil {
+				assert.Fail(t, err.Error())
+				return
+			}
 
 			result := <-c.Messages()
 
@@ -122,7 +125,10 @@ func TestBroker_Status(t *testing.T) {
 			tc.ExpectationFunc(&m.Mock)
 
 			b := broker.New(m, http.DefaultClient)
-			b.NewClient("test", "test")
+			if _, err := b.NewClient("test", "test"); err != nil {
+				assert.Fail(t, err.Error())
+				return
+			}
 
 			status := b.Status()
 
@@ -209,7 +215,10 @@ func TestBroker_RemoveClient(t *testing.T) {
 			tc.ExpectationFunc(&m.Mock)
 
 			b := broker.New(m, http.DefaultClient)
-			b.NewClient(tc.Channel, tc.Client)
+			if _, err := b.NewClient(tc.Channel, tc.Client); err != nil {
+				assert.Fail(t, err.Error())
+				return
+			}
 
 			status := b.Status()
 			assert.Len(t, status.Channels, 1)

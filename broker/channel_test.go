@@ -116,7 +116,11 @@ func TestChannel_NumClients(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			ch.AddClient(tc.Client)
+
+			if _, err := ch.AddClient(tc.Client); err != nil {
+				assert.Fail(t, err.Error())
+				return
+			}
 
 			assert.NotNil(t, ch)
 			assert.Equal(t, tc.ExpectedClientCount, ch.NumClients())
