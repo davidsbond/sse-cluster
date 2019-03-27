@@ -41,6 +41,43 @@ func TestChannel_Write(t *testing.T) {
 	}
 }
 
+func TestChannel_WriteTo(t *testing.T) {
+	t.Parallel()
+	logrus.SetLevel(logrus.PanicLevel)
+
+	tt := []struct {
+		Name    string
+		Client  string
+		Channel string
+		Message broker.Message
+	}{
+		{
+			Name:    "It should write a message to a client",
+			Client:  "test",
+			Channel: "test",
+			Message: broker.Message{
+				Data: []byte("test"),
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.Name, func(t *testing.T) {
+			ch := broker.NewChannel(tc.Channel)
+			cl, _ := ch.AddClient(tc.Client)
+
+			if err := ch.WriteTo(tc.Client, tc.Message); err != nil {
+				assert.Fail(t, err.Error())
+				return
+			}
+
+			msg := <-cl.Messages()
+
+			assert.Equal(t, tc.Message, msg)
+		})
+	}
+}
+
 func TestChannel_AddClient(t *testing.T) {
 	t.Parallel()
 	logrus.SetLevel(logrus.PanicLevel)

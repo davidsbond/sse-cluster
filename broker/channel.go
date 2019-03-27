@@ -47,6 +47,8 @@ func (c *Channel) WriteTo(clientID string, msg Message) error {
 			"eventId": msg.ID,
 			"event":   msg.Event,
 		}).Info("wrote message to client")
+
+		return nil
 	}
 
 	return fmt.Errorf("failed to write message, client %s does not exist in channel %s", clientID, c.id)
