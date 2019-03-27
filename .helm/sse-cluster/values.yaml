@@ -37,8 +37,8 @@ service:
 
 configMap:
   data:
-    GOSSIP_PORT: 42000
+    GOSSIP_PORT: "42000"
     HTTP_CLIENT_TIMEOUT: 10s
-    HTTP_SERVER_PORT: 8080
-    HTTP_SERVER_ENABLE_CORS: false
+    HTTP_SERVER_PORT: "8080"
+    HTTP_SERVER_ENABLE_CORS: "false"
   annotations:

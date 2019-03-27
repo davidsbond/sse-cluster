@@ -17,8 +17,8 @@ metadata:
     # secret have changed by using a checksum of their manifests. This prevents 
     # an issue where if the deployment spec itself didn't change the application 
     # keeps running with the old configuration resulting in an inconsistent deployment.
-    checksum/config: {{ include (print $.Template.BasePath "/ConfigMap.yaml") . | sha256sum }}
-    checksum/secret: {{ include (print $.Template.BasePath "/Secret.yaml") . | sha256sum }}
+    checksum/config: {{ include (print $.Template.BasePath "/ConfigMap.yaml") . | sha1sum }}
+    checksum/secret: {{ include (print $.Template.BasePath "/Secret.yaml") . | sha1sum }}
 spec:
   serviceName: {{ .Release.Name }}
   replicas: {{ .Values.statefulSet.replicas }}
