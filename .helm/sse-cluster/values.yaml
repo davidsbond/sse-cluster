@@ -1,10 +1,27 @@
 statefulSet:
   replicas: 1
+  terminationGracePeriodSeconds: 60
 
   image:
     repository: davidsbond/sse-cluster
     tag: latest
     pullPolicy: IfNotPresent
+
+  livenessProbe:
+    port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 10
+
+  readinessProbe:
+    port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 10
 
   annotations:
 

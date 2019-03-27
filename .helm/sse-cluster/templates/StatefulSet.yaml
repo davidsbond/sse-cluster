@@ -9,6 +9,7 @@ metadata:
     helm.sh/chart: {{ .Chart.Name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+  # Include any additional annotations
   {{- with .Values.statefulSet.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -32,11 +33,33 @@ spec:
         app.kubernetes.io/name: {{ .Release.Name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.statefulSet.terminationGracePeriodSeconds }}
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.statefulSet.image.repository }}:{{ .Values.statefulSet.image.tag }}
         imagePullPolicy: {{ .Values.statefulSet.image.pullPolicy }}
         command: ["/bin/node", "start"]
+        livenessProbe:
+          httpGet:
+            port: {{ .Values.statefulSet.livenessProbe.port }}
+            path: /status 
+            scheme: HTTP 
+          initialDelaySeconds: {{ .Values.statefulSet.livenessProbe.initialDelaySeconds }} 
+          periodSeconds: {{ .Values.statefulSet.livenessProbe.periodSeconds }} 
+          successThreshold: {{ .Values.statefulSet.livenessProbe.successThreshold }} 
+          failureThreshold: {{ .Values.statefulSet.livenessProbe.failureThreshold }}  
+          timeoutSeconds: {{ .Values.statefulSet.livenessProbe.timeoutSeconds }}   
+
+        readinessProbe:
+          httpGet:
+            port: {{ .Values.statefulSet.readinessProbe.port }}
+            path: /status 
+            scheme: HTTP 
+          initialDelaySeconds: {{ .Values.statefulSet.readinessProbe.initialDelaySeconds }} 
+          periodSeconds: {{ .Values.statefulSet.readinessProbe.periodSeconds }} 
+          successThreshold: {{ .Values.statefulSet.readinessProbe.successThreshold }} 
+          failureThreshold: {{ .Values.statefulSet.readinessProbe.failureThreshold }}  
+          timeoutSeconds: {{ .Values.statefulSet.readinessProbe.timeoutSeconds }}   
         env:
         - name: "GOSSIP_HOSTS"
           valueFrom:

@@ -103,18 +103,22 @@ func handleExitSignal(b *broker.Broker, svr *http.Server, ml *memberlist.Memberl
 	defer cancel()
 
 	// Leave the gossip memberlist
+	logrus.Info("leaving gossip cluster")
 	if err := ml.Leave(time.Second * 5); err != nil {
 		return err
 	}
 
 	// Gracefully shut down the HTTP server
+	logrus.Info("shutting down HTTP server")
 	if err := svr.Shutdown(ctx); err != nil {
 		return err
 	}
 
 	// Wait for any broker operations to finish
+	logrus.Info("waiting for broker operations to finish")
 	b.Close()
 
+	logrus.Info("closing log writer")
 	return logrus.StandardLogger().Writer().Close()
 }
 
