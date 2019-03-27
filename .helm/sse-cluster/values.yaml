@@ -9,16 +9,16 @@ statefulSet:
 
   livenessProbe:
     port: 8080
-    initialDelaySeconds: 60
-    periodSeconds: 60
+    initialDelaySeconds: 10
+    periodSeconds: 10
     successThreshold: 1
     failureThreshold: 3
     timeoutSeconds: 10
 
   readinessProbe:
     port: 8080
-    initialDelaySeconds: 60
-    periodSeconds: 60
+    initialDelaySeconds: 10
+    periodSeconds: 10
     successThreshold: 1
     failureThreshold: 3
     timeoutSeconds: 10
