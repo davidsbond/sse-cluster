@@ -94,8 +94,8 @@ func (c *Channel) ClientIDs() []string {
 	return out
 }
 
-// AddClient adds a new client to the channel
-func (c *Channel) AddClient(id string) (*Client, error) {
+// NewClient adds a new client to the channel
+func (c *Channel) NewClient(id string) (*Client, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 

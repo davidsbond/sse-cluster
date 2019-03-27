@@ -249,7 +249,7 @@ func (b *Broker) NewClient(channelID, clientID string) (*Client, error) {
 		"client":  clientID,
 	}).Info("created new client")
 
-	return ch.AddClient(clientID)
+	return ch.NewClient(clientID)
 }
 
 // RemoveClient removes a client from a channel. If the channel has no

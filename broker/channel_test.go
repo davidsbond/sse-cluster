@@ -31,7 +31,7 @@ func TestChannel_Write(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			cl, _ := ch.AddClient(tc.Client)
+			cl, _ := ch.NewClient(tc.Client)
 
 			ch.Write(tc.Message)
 			msg := <-cl.Messages()
@@ -64,7 +64,7 @@ func TestChannel_WriteTo(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			cl, _ := ch.AddClient(tc.Client)
+			cl, _ := ch.NewClient(tc.Client)
 
 			if err := ch.WriteTo(tc.Client, tc.Message); err != nil {
 				assert.Fail(t, err.Error())
@@ -78,7 +78,7 @@ func TestChannel_WriteTo(t *testing.T) {
 	}
 }
 
-func TestChannel_AddClient(t *testing.T) {
+func TestChannel_NewClient(t *testing.T) {
 	t.Parallel()
 	logrus.SetLevel(logrus.PanicLevel)
 
@@ -97,7 +97,7 @@ func TestChannel_AddClient(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			cl, _ := ch.AddClient(tc.Client)
+			cl, _ := ch.NewClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Equal(t, tc.Client, cl.ID())
@@ -124,7 +124,7 @@ func TestChannel_ClientIDs(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			cl, _ := ch.AddClient(tc.Client)
+			cl, _ := ch.NewClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Contains(t, ch.ClientIDs(), cl.ID())
@@ -154,7 +154,7 @@ func TestChannel_NumClients(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
 
-			if _, err := ch.AddClient(tc.Client); err != nil {
+			if _, err := ch.NewClient(tc.Client); err != nil {
 				assert.Fail(t, err.Error())
 				return
 			}
@@ -184,7 +184,7 @@ func TestChannel_RemoveClient(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
-			cl, _ := ch.AddClient(tc.Client)
+			cl, _ := ch.NewClient(tc.Client)
 
 			assert.NotNil(t, ch)
 			assert.Equal(t, tc.Client, cl.ID())
