@@ -42,11 +42,11 @@ func TestMiddleware_CORS(t *testing.T) {
 			r := httptest.NewRequest(tc.Method, "/", nil)
 			w := httptest.NewRecorder()
 
-			mux := mux.NewRouter()
+			router := mux.NewRouter()
 
-			mux.Use(handler.CORSMiddleware)
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-			mux.ServeHTTP(w, r)
+			router.Use(handler.CORSMiddleware)
+			router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+			router.ServeHTTP(w, r)
 
 			assert.Equal(t, tc.ExpectedStatus, w.Code)
 

@@ -91,10 +91,10 @@ func TestHandler_Publish(t *testing.T) {
 			r := httptest.NewRequest("POST", "/publish/"+tc.Channel, bytes.NewBuffer(body))
 			w := httptest.NewRecorder()
 
-			mux := mux.NewRouter()
-			mux.HandleFunc("/publish/{channel}", h.Publish)
+			router := mux.NewRouter()
+			router.HandleFunc("/publish/{channel}", h.Publish)
 
-			mux.ServeHTTP(w, r)
+			router.ServeHTTP(w, r)
 
 			assert.Equal(t, tc.ExpectedCode, w.Code)
 		})
@@ -139,11 +139,11 @@ func TestHandler_Subscribe(t *testing.T) {
 			r := httptest.NewRequest("GET", "/subscribe/"+tc.Channel, nil)
 			w := httptest.NewRecorder()
 
-			mux := mux.NewRouter()
-			mux.HandleFunc("/subscribe/{channel}", h.Subscribe)
+			router := mux.NewRouter()
+			router.HandleFunc("/subscribe/{channel}", h.Subscribe)
 
 			ctx, cancel := context.WithCancel(r.Context())
-			go mux.ServeHTTP(w, r.WithContext(ctx))
+			go router.ServeHTTP(w, r.WithContext(ctx))
 
 			<-time.After(time.Millisecond * 100)
 

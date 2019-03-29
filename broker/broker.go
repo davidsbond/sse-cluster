@@ -1,4 +1,4 @@
-// Package broker contains the broker implementataion.
+// Package broker contains the broker implementation.
 package broker
 
 import (

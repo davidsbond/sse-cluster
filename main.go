@@ -28,5 +28,7 @@ func main() {
 		cmd.Start(),
 	}
 
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		logrus.WithError(err).Fatal("command failed with error")
+	}
 }

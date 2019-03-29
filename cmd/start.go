@@ -123,31 +123,31 @@ func handleExitSignal(b *broker.Broker, svr *http.Server, ml *memberlist.Memberl
 }
 
 func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
-	mux := mux.NewRouter()
+	router := mux.NewRouter()
 
-	mux.HandleFunc("/status", h.Status).Methods("GET")
+	router.HandleFunc("/status", h.Status).Methods("GET")
 
-	mux.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
-	mux.HandleFunc("/channel/{channel}/client/{client}", h.Subscribe).Methods("GET")
+	router.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
+	router.HandleFunc("/channel/{channel}/client/{client}", h.Subscribe).Methods("GET")
 
-	mux.HandleFunc("/channel", h.Publish).
+	router.HandleFunc("/channel", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
-	mux.HandleFunc("/channel/{channel}", h.Publish).
+	router.HandleFunc("/channel/{channel}", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
-	mux.HandleFunc("/channel/{channel}/client/{client}", h.Publish).
+	router.HandleFunc("/channel/{channel}/client/{client}", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
 	if ctx.Bool("http.server.cors.enabled") {
-		mux.Use(handler.CORSMiddleware)
+		router.Use(handler.CORSMiddleware)
 	}
 
 	svr := &http.Server{
-		Handler:  mux,
+		Handler:  router,
 		Addr:     ":" + ctx.String("http.server.port"),
 		ErrorLog: log.New(logrus.StandardLogger().Writer(), "", 0),
 	}
@@ -173,7 +173,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	hosts := ctx.StringSlice("gossip.hosts")
 	hostname, _ := os.Hostname()
 
-	actual := []string{}
+	var actual []string
 	for _, host := range hosts {
 		if strings.Contains(host, hostname) {
 			continue
