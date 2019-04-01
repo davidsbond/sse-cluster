@@ -29,7 +29,7 @@ func NewChannel(id string) *Channel {
 }
 
 // WriteTo writes a message directly to a given client
-func (c *Channel) WriteTo(clientID string, msg Message) error {
+func (c *Channel) WriteTo(clientID string, msg Message) {
 	c.log.WithFields(logrus.Fields{
 		"clientId": clientID,
 		"eventId":  msg.ID,
@@ -48,8 +48,6 @@ func (c *Channel) WriteTo(clientID string, msg Message) error {
 			"event":   msg.Event,
 		}).Info("wrote message to client")
 	}
-
-	return fmt.Errorf("failed to write message, client %s does not exist in channel %s", clientID, c.id)
 }
 
 // Write writes a given message to all clients in the channel
