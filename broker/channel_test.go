@@ -66,11 +66,7 @@ func TestChannel_WriteTo(t *testing.T) {
 			ch := broker.NewChannel(tc.Channel)
 			cl, _ := ch.NewClient(tc.Client)
 
-			if err := ch.WriteTo(tc.Client, tc.Message); err != nil {
-				assert.Fail(t, err.Error())
-				return
-			}
-
+			ch.WriteTo(tc.Client, tc.Message)
 			msg := <-cl.Messages()
 
 			assert.Equal(t, tc.Message, msg)

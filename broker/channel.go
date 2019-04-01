@@ -47,8 +47,6 @@ func (c *Channel) WriteTo(clientID string, msg Message) {
 			"eventId": msg.ID,
 			"event":   msg.Event,
 		}).Info("wrote message to client")
-
-		return nil
 	}
 }
 
