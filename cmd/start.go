@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/davidsbond/sse-cluster/broker"
@@ -94,7 +95,7 @@ func start(ctx *cli.Context) error {
 
 func handleExitSignal(b *broker.Broker, svr *http.Server, ml *memberlist.Memberlist) error {
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	<-stop
 	logrus.Info("got shutdown signal")
@@ -102,47 +103,51 @@ func handleExitSignal(b *broker.Broker, svr *http.Server, ml *memberlist.Memberl
 	defer cancel()
 
 	// Leave the gossip memberlist
+	logrus.Info("leaving gossip cluster")
 	if err := ml.Leave(time.Second * 5); err != nil {
 		return err
 	}
 
 	// Gracefully shut down the HTTP server
+	logrus.Info("shutting down HTTP server")
 	if err := svr.Shutdown(ctx); err != nil {
 		return err
 	}
 
 	// Wait for any broker operations to finish
+	logrus.Info("waiting for broker operations to finish")
 	b.Close()
 
+	logrus.Info("closing log writer")
 	return logrus.StandardLogger().Writer().Close()
 }
 
 func createHTTPServer(ctx *cli.Context, h *handler.Handler) *http.Server {
-	mux := mux.NewRouter()
+	router := mux.NewRouter()
 
-	mux.HandleFunc("/status", h.Status).Methods("GET")
+	router.HandleFunc("/status", h.Status).Methods("GET")
 
-	mux.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
-	mux.HandleFunc("/channel/{channel}/client/{client}", h.Subscribe).Methods("GET")
+	router.HandleFunc("/channel/{channel}", h.Subscribe).Methods("GET")
+	router.HandleFunc("/channel/{channel}/client/{client}", h.Subscribe).Methods("GET")
 
-	mux.HandleFunc("/channel", h.Publish).
+	router.HandleFunc("/channel", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
-	mux.HandleFunc("/channel/{channel}", h.Publish).
+	router.HandleFunc("/channel/{channel}", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
-	mux.HandleFunc("/channel/{channel}/client/{client}", h.Publish).
+	router.HandleFunc("/channel/{channel}/client/{client}", h.Publish).
 		Methods("POST").
 		Headers("Content-Type", "application/json")
 
 	if ctx.Bool("http.server.cors.enabled") {
-		mux.Use(handler.CORSMiddleware)
+		router.Use(handler.CORSMiddleware)
 	}
 
 	svr := &http.Server{
-		Handler:  mux,
+		Handler:  router,
 		Addr:     ":" + ctx.String("http.server.port"),
 		ErrorLog: log.New(logrus.StandardLogger().Writer(), "", 0),
 	}
@@ -168,7 +173,7 @@ func createMemberList(ctx *cli.Context) (*memberlist.Memberlist, error) {
 	hosts := ctx.StringSlice("gossip.hosts")
 	hostname, _ := os.Hostname()
 
-	actual := []string{}
+	var actual []string
 	for _, host := range hosts {
 		if strings.Contains(host, hostname) {
 			continue

@@ -74,10 +74,9 @@ func (h *Handler) Publish(w http.ResponseWriter, r *http.Request) {
 // Events are written sequentially in 'text/event-stream' format. When the client
 // disconnects, they're removed from the broker.
 func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
-	closer, cOK := w.(http.CloseNotifier)
-	flusher, fOK := w.(http.Flusher)
+	flusher, ok := w.(http.Flusher)
 
-	if !cOK || !fOK {
+	if !ok {
 		http.Error(w, "client does not support streaming", http.StatusBadRequest)
 		return
 	}
@@ -121,7 +120,7 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 			}
 
 			flusher.Flush()
-		case <-closer.CloseNotify():
+		case <-r.Context().Done():
 			h.broker.RemoveClient(channelID, clientID)
 			h.log.WithFields(reqInfo).Info("subscriber disconnected")
 

@@ -66,7 +66,7 @@ func (m *Message) Bytes() []byte {
 	return out.Bytes()
 }
 
-// JSON returns the Mesage instance in JSON encoding
+// JSON returns the Message instance in JSON encoding
 func (m *Message) JSON() []byte {
 	data, _ := json.Marshal(m)
 

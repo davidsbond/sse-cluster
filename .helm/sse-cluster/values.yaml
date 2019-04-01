@@ -1,10 +1,27 @@
 statefulSet:
   replicas: 1
+  terminationGracePeriodSeconds: 60
 
   image:
     repository: davidsbond/sse-cluster
     tag: latest
     pullPolicy: IfNotPresent
+
+  livenessProbe:
+    port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 10
+
+  readinessProbe:
+    port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 10
 
   annotations:
 
@@ -37,8 +54,8 @@ service:
 
 configMap:
   data:
-    GOSSIP_PORT: 42000
+    GOSSIP_PORT: "42000"
     HTTP_CLIENT_TIMEOUT: 10s
-    HTTP_SERVER_PORT: 8080
-    HTTP_SERVER_ENABLE_CORS: false
+    HTTP_SERVER_PORT: "8080"
+    HTTP_SERVER_ENABLE_CORS: "false"
   annotations:

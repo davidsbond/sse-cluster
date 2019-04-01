@@ -1,4 +1,4 @@
-// Package broker contains the broker implementataion.
+// Package broker contains the broker implementation.
 package broker
 
 import (
@@ -251,7 +251,7 @@ func (b *Broker) NewClient(channelID, clientID string) (*Client, error) {
 		"client":  clientID,
 	}).Info("creating new client")
 
-	return ch.AddClient(clientID)
+	return ch.NewClient(clientID)
 }
 
 // RemoveClient removes a client from a channel. If the channel has no
