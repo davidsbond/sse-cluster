@@ -100,34 +100,39 @@ func (b *Broker) Status() *Status {
 // is forwarded asynchronously via HTTP to the next node whose id does not exist in
 // the message's BeenTo field.
 func (b *Broker) Publish(channelID, clientID string, msg Message) error {
+	switch {
+	// If we've got no channel or client identifier, publish to all clients
+	// on all channels
+	case channelID == "" && clientID == "":
+		b.wg.Add(1)
+		go b.publishAll(msg)
+	// If we've got a channel identifier but no client identifier, write to
+	// the entire channel
+	case channelID != "" && clientID == "":
+		b.wg.Add(1)
+		go b.publishChannel(channelID, msg)
+	// If we've got both a client and channel identifier, write to the client
+	// on the given channel
+	case channelID != "" && clientID != "":
+		b.wg.Add(1)
+		go b.publishClient(channelID, clientID, msg)
+	default:
+		return errors.New("invalid channel/client identifier combination")
+	}
+
 	// If we're not the only member, propagate the event
 	if b.memberlist.NumMembers() > 1 {
 		b.wg.Add(1)
 		go b.sendToNextNode(channelID, clientID, msg)
 	}
 
-	switch {
-	// If we've got no channel or client identifier, publish to all clients
-	// on all channels
-	case channelID == "" && clientID == "":
-		b.publishAll(msg)
-		return nil
-	// If we've got a channel identifier but no client identifier, write to
-	// the entire channel
-	case channelID != "" && clientID == "":
-		return b.publishChannel(channelID, msg)
-	// If we've got both a client and channel identifier, write to the client
-	// on the given channel
-	case channelID != "" && clientID != "":
-		return b.publishClient(channelID, clientID, msg)
-	default:
-		return errors.New("invalid channel/client identifier combination")
-	}
+	return nil
 }
 
 func (b *Broker) publishAll(msg Message) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
+	defer b.wg.Done()
 
 	for _, ch := range b.channels {
 		b.mux.Unlock()
@@ -138,27 +143,24 @@ func (b *Broker) publishAll(msg Message) {
 	}
 }
 
-func (b *Broker) publishChannel(channelID string, msg Message) error {
+func (b *Broker) publishChannel(channelID string, msg Message) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
+	defer b.wg.Done()
 
 	if ch, ok := b.channels[channelID]; ok {
 		ch.Write(msg)
-		return nil
 	}
-
-	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
 }
 
-func (b *Broker) publishClient(channelID, clientID string, msg Message) error {
+func (b *Broker) publishClient(channelID, clientID string, msg Message) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
+	defer b.wg.Done()
 
 	if ch, ok := b.channels[channelID]; ok {
-		return ch.WriteTo(clientID, msg)
+		ch.WriteTo(clientID, msg)
 	}
-
-	return fmt.Errorf("failed to publish, channel %s does not exist", channelID)
 }
 
 func (b *Broker) sendToNextNode(channelID, clientID string, msg Message) {
@@ -247,7 +249,7 @@ func (b *Broker) NewClient(channelID, clientID string) (*Client, error) {
 	b.log.WithFields(logrus.Fields{
 		"channel": channelID,
 		"client":  clientID,
-	}).Info("created new client")
+	}).Info("creating new client")
 
 	return ch.AddClient(clientID)
 }
